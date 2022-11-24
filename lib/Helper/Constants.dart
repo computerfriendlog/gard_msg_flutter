@@ -14,6 +14,7 @@ class Constants {
   static String TYPE_NEW_JOBS = "new_job";
   static String REJECT_GUARD = "guard_reject_job";
   static String START_PATROL = "start_patroling";
+  static String START_PATROL_WITH_PICTURE = "start_patroling_with_image";
   static String ACCEPT_GUARD = "guard_accept_job";
   static String TYPE_ACCEPTED_JOBS = "Accepted";
   static String somethingwentwrong = "Something went wrong";
@@ -22,6 +23,7 @@ class Constants {
   static IconData ic_calender=Icons.calendar_month_outlined;
   static IconData ic_location=Icons.location_on_outlined;
   static IconData ic_arrow_forword=Icons.arrow_forward_ios_rounded;
+  static IconData ic_phone=Icons.phone;
 
   ///colors
   static Color toast_grey = Colors.grey;

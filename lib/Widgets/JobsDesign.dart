@@ -14,6 +14,7 @@ class JobsDesign extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print(' job status is${newJob_detail!.job_status}');
     return Card(
       elevation: 0,
       child: Container(
@@ -115,7 +116,7 @@ class JobsDesign extends StatelessWidget {
                         ],
                       ),
                     ),
-                     Icon(
+                    Icon(
                       size: 22,
                       Constants.ic_arrow_forword,
                       color: Colors.black, //Theme.of(context).primaryColor
@@ -125,7 +126,7 @@ class JobsDesign extends StatelessWidget {
                 const SizedBox(
                   height: 5,
                 ),
-                newJob_detail!.job_status != 'Accepted'
+                newJob_detail!.job_status == 'New'
                     ? const Text(
                         'Waiting for acceptance',
                         style: TextStyle(

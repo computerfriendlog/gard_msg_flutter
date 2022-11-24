@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
+
 //import 'package:geocoding/geocoding.dart';
 import 'package:oktoast/oktoast.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class Helper {
   static Position currentPositon = Position(
@@ -98,34 +100,43 @@ class Helper {
     //     '${placemark.street} , ${placemark.subLocality}, ${placemark.postalCode}, ${placemark.country}';
     return currentPositon;
   }
-  static void Toast(String msg,Color clr){
+
+  static void Toast(String msg, Color clr) {
     showToast(
       msg,
       duration: const Duration(seconds: 2),
       position: ToastPosition.bottom,
       backgroundColor: clr,
-      radius: 3.0,
-      textStyle: const TextStyle(fontSize: 14.0),
+      radius: 5.0,
+      textPadding: const EdgeInsets.all(5),
+      textStyle: const TextStyle(fontSize: 20.0),
     );
   }
 
-  static void showLoading(BuildContext context){
-      AlertDialog alert=AlertDialog(
-        content:  Row(
-          children: [
-           const  CircularProgressIndicator(),
-            Container(margin: const EdgeInsets.only(left: 5),child:const Text("Loading..." )),
-          ],),
-      );
-      showDialog(barrierDismissible: false,
-        context:context,
-        builder:(BuildContext context){
-          return alert;
-        },
-      );
+  static showLoading(BuildContext context) {
+    AlertDialog alert = AlertDialog(
+      backgroundColor: Colors.transparent,
+      content: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          LoadingAnimationWidget.inkDrop(
+            color: Theme.of(context).primaryColor,
+            size: 50,
+          ),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
   }
 
-  static double distanceLatLong(double lat1,  double lon1, double lat2,double lon2) {
-  return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
-}
+  static double distanceLatLong(
+      double lat1, double lon1, double lat2, double lon2) {
+    return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+  }
 }

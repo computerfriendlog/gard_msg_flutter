@@ -15,6 +15,7 @@ class LocalDatabase {
   static String USER_ADDRESS = "guardAddress_key";
   static String USER_MOBILE = "guard_mobile_key";
   static String USER_OFFICE = "guard_office_key";
+  static String STARTED_JOB = "started_job_key";
 
   static Future setLogined(bool logined) async {
     try {

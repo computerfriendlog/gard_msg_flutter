@@ -1,6 +1,7 @@
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Screens/Job/CurrentJobsScreen.dart';
 import 'package:gard_msg_flutter/Screens/LoginScreen.dart';
+import 'package:gard_msg_flutter/Screens/MessageScreen.dart';
 import 'package:gard_msg_flutter/Widgets/boxForHomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -523,7 +524,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  print('ofic msg on tap');
+                                  Navigator.pushNamed(
+                                      context, MessageScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -611,13 +613,12 @@ class _HomeScreenState extends State<HomeScreen> {
     DateTime now = DateTime.now();
     //print('day is ${DateFormat('EEEE').format(now)}');
 
-
     month = DateFormat.MMMM().format(now);
     date = DateFormat('dd').format(now);
     day = DateFormat('EEEE').format(now);
     setState(() {});
     getDashboardData();
-    await  Helper.determineCurrentPosition();
+    await Helper.determineCurrentPosition();
   }
 
   void getDashboardData() async {
