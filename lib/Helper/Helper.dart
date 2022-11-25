@@ -104,11 +104,11 @@ class Helper {
   static void Toast(String msg, Color clr) {
     showToast(
       msg,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
       position: ToastPosition.bottom,
       backgroundColor: clr,
       radius: 5.0,
-      textPadding: const EdgeInsets.all(5),
+      textPadding: const EdgeInsets.all(8),
       textStyle: const TextStyle(fontSize: 20.0),
     );
   }
@@ -138,5 +138,16 @@ class Helper {
   static double distanceLatLong(
       double lat1, double lon1, double lat2, double lon2) {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
+  }
+
+  static Widget LoadingWidget(BuildContext context){
+    return SizedBox(
+      child: LoadingAnimationWidget.inkDrop(
+        color: Theme.of(context).primaryColor,
+        //leftDotColor: const Color(0xFF1A1A3F),
+        //rightDotColor: const Color(0xFFEA3799),
+        size: 50,
+      ),
+    );
   }
 }

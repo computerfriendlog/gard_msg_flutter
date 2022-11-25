@@ -8,7 +8,9 @@ import 'package:gard_msg_flutter/Screens/SplashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 
+import 'Screens/Job/CheckCallsScreen.dart';
 import 'Screens/Job/FinishJobScreen.dart';
+import 'Screens/Job/IncedentShowSceen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +39,8 @@ class MyApp extends StatelessWidget {
           SiteSchedule.routeName: (ctx) => SiteSchedule(),
           FinishJobScreen.routeName: (ctx) => FinishJobScreen(),
           MessageScreen.routeName: (ctx) => MessageScreen(),
+          CheckCallsScreen.routeName: (ctx) => CheckCallsScreen(),
+          IncedentShowScreen.routeName: (ctx) => IncedentShowScreen(),
         },
         home: const SplashScreen(),
     ),

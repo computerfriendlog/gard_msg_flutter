@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Screens/Job/CurrentJobsScreen.dart';
 import 'package:gard_msg_flutter/Screens/LoginScreen.dart';
@@ -27,6 +29,7 @@ String month = '';
 String day = '';
 String date = '';
 
+String deviceType = '';
 String name = '';
 String officeName = '';
 String gard_id = '';
@@ -607,6 +610,12 @@ class _HomeScreenState extends State<HomeScreen> {
     gard_id = await LocalDatabase.getString(LocalDatabase.GUARD_ID);
     password = await LocalDatabase.getString(LocalDatabase.USER_PASSWORD);
     office_phone = await LocalDatabase.getString(LocalDatabase.USER_MOBILE);
+
+    if (Platform.isAndroid) {
+      deviceType = 'Android';
+    } else if (Platform.isIOS) {
+      deviceType = 'IOS';
+    }
     print(
         'after login detail is here  $officeName  \n $gard_id      \n   $password   ');
     availableForJob = await LocalDatabase.isAvailable() ?? false;

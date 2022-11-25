@@ -134,7 +134,18 @@ class JobsDesign extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w100),
                       )
-                    : Container(),
+                    : Container(
+                        child: newJob_detail!.job_status == 'Patrol_started'
+                            ? const Text(
+                                'Patrol started',
+                                style: TextStyle(
+                                    color: Colors
+                                        .green, //Theme.of(context).cardColor
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w100),
+                              )
+                            : Container(),
+                      ),
                 const SizedBox(
                   height: 5,
                 ),

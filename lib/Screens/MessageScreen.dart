@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/Helper/Constants.dart';
 import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
 
+import '../APIs/RestClient.dart';
 import '../Helper/Helper.dart';
+import '../Models/Message.dart';
 
 class MessageScreen extends StatefulWidget {
   static const routeName = '/MessageScreen';
@@ -14,6 +16,17 @@ class MessageScreen extends StatefulWidget {
 }
 
 class _MessageScreenState extends State<MessageScreen> {
+  final restClient = RestClient();
+  bool isLoding = true;
+  List<Message>? msg_list;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    loadSms();
+  }
+
   @override
   Widget build(BuildContext context) {
     MediaQueryData mediaQueryData = MediaQuery.of(context);
@@ -67,10 +80,25 @@ class _MessageScreenState extends State<MessageScreen> {
                 ),
               ),
             ),
-
           ],
         ),
       ),
     );
+  }
+
+  void loadSms() async {
+    print('getting sms list start');
+    final parameters = {
+      'type': Constants.MESSAGE_LIST,
+      'office_name': officeName,
+      'guard_id': gard_id,
+      'device_type': deviceType
+    };
+
+    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+        headers: {}, body: parameters);
+    print('sms list response is here     ${respose.data}');
+
+    //Navigator.pop(context);
   }
 }

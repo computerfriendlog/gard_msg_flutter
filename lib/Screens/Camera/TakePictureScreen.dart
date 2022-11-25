@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/Helper.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:gard_msg_flutter/Screens/Job/FinishJobScreen.dart';
@@ -139,16 +140,24 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                     Helper.showLoading(context);
 
                                     File(imagePath_clicked).readAsBytesSync();
-                                    startJobWithImage(widget.dis, widget.reason,
-                                        File(imagePath_clicked));
+                                    if (widget.job.job_status != null) {
+                                      startJobWithImage(
+                                          widget.dis,
+                                          widget.reason,
+                                          File(imagePath_clicked));
+                                    } else {
+                                      print('send acknowledgement... with image');
+                                      APICalls.sentAcknowledgement(context, widget.job.job_id!, imagePath_clicked);
+                                    }
                                   } catch (e) {
+                                    print('send acknowledgement... with image    exceptrion   ${e.toString()}');
                                     Helper.Toast(Constants.somethingwentwrong,
                                         Constants.toast_red);
                                     print(e);
                                   }
                                 },
-                                child: const Icon(
-                                  Icons.done,
+                                child: Icon(
+                                  Constants.ic_tik,
                                   color: Colors.white,
                                 ),
                               )
