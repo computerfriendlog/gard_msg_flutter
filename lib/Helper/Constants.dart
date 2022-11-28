@@ -22,6 +22,7 @@ class Constants {
   static String TYPE_ACCEPTED_JOBS = "Accepted";
   static String CHECK_POINTS = "get_jobs_check_points";
   static String job_incidents_list = "job_incidents_list";
+  static String INCIDENT_LIST = "incident_type_list";
   static String MANUAL_ACK_CHECKPOINT = "manual_acknowledge_check_points";
   static String somethingwentwrong = "Something went wrong";
 
@@ -33,6 +34,7 @@ class Constants {
   static IconData ic_tik = Icons.done;
   static IconData ic_add = Icons.add;
   static IconData ic_cross = Icons.cancel_outlined;
+  static IconData ic_camera = Icons.camera_alt;
 
   ///colors
   static Color toast_grey = Colors.grey;

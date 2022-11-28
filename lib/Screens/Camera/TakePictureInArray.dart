@@ -12,26 +12,28 @@ import '../HomeScreen.dart';
 import 'package:dio/dio.dart';
 
 // A screen that allows users to take a picture using a given camera.
-class TakePictureScreen extends StatefulWidget {
-  const TakePictureScreen(
-      {super.key,
-      required this.camera,
-      required this.job,
-      required this.dis,
-      required this.reason});
+class TakePictureInArray extends StatefulWidget {
+  const TakePictureInArray({
+    super.key,
+    required this.camera,
+    //required this.job,
+    //required this.dis,
+    //required this.reason
+  });
 
   final CameraDescription camera;
-  final NewJob job;
-  final double dis;
-  final String reason;
+
+  //final NewJob job;
+  //final double dis;
+  //final String reason;
 
   @override
-  TakePictureScreenState createState() => TakePictureScreenState();
+  TakePictureInArrayState createState() => TakePictureInArrayState();
 }
 
-String imagePath_clicked = '';
+List<String> imagePath_clicked_list = [];
 
-class TakePictureScreenState extends State<TakePictureScreen> {
+class TakePictureInArrayState extends State<TakePictureInArray> {
   late CameraController _controller;
   late Future<void> _initializeControllerFuture;
   bool loading = true;
@@ -44,7 +46,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     super.initState();
     _controller = CameraController(
       widget.camera,
-      ResolutionPreset.high,
+      ResolutionPreset.low,
     );
     // Next, initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();
@@ -73,22 +75,19 @@ class TakePictureScreenState extends State<TakePictureScreen> {
               width: _width,
               child: loading
                   ? Helper.showLoading(context)
-                  : !imageClicked
-                      ? FutureBuilder<void>(
-                          future: _initializeControllerFuture,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.done) {
-                              // If the Future is complete, display the preview.
-                              return CameraPreview(_controller);
-                            } else {
-                              // Otherwise, display a loading indicator.
-                              return const Center(
-                                  child: CircularProgressIndicator());
-                            }
-                          },
-                        )
-                      : Image.file(File(imagePath_clicked))),
+                  : FutureBuilder<void>(
+                      future: _initializeControllerFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          // If the Future is complete, display the preview.
+                          return CameraPreview(_controller);
+                        } else {
+                          // Otherwise, display a loading indicator.
+                          return const Center(
+                              child: CircularProgressIndicator());
+                        }
+                      },
+                    ) /*: Image.file(File(imagePath_clicked[im])) ),*/),
           Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -110,10 +109,10 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                   try {
                                     imageClicked = true;
                                     await _initializeControllerFuture;
-                                    imagePath_clicked =
-                                        (await _controller.takePicture()).path;
+                                    imagePath_clicked_list.add(
+                                        (await _controller.takePicture()).path);
                                     print(
-                                        'image picked is ${imagePath_clicked}');
+                                        'image picked is ${imagePath_clicked_list[0]}');
                                     Navigator.pop(context);
                                     setState(() {});
                                   } catch (e) {
@@ -127,7 +126,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                             : FloatingActionButton(
                                 onPressed: () async {
                                   imageClicked = false;
-                                  imagePath_clicked = '';
+                                  imagePath_clicked_list = [];
                                   setState(() {});
                                 },
                                 child: const Icon(Icons.cancel),
@@ -135,30 +134,59 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                         imageClicked
                             ? FloatingActionButton(
                                 onPressed: () async {
-                                  ///call API
+                                  ///add next image
+                                  Helper.showLoading(context);
                                   try {
-                                    Helper.showLoading(context);
-
-                                    //File(imagePath_clicked).readAsBytesSync();
-                                    if (widget.job.job_status != null) {
-                                      startJobWithImage(
-                                          widget.dis,
-                                          widget.reason,
-                                          File(imagePath_clicked));
-                                    } else {
-                                      print('send acknowledgement... with image');
-                                      APICalls.sentAcknowledgement(context, widget.job.job_id!, imagePath_clicked);
-                                    }
+                                    imageClicked = true;
+                                    await _initializeControllerFuture;
+                                    imagePath_clicked_list.add(
+                                        (await _controller.takePicture()).path);
+                                    //print('image picked is ${imagePath_clicked_list[0]}');
+                                    Navigator.pop(context);
+                                    setState(() {});
                                   } catch (e) {
-                                    print('send acknowledgement... with image    exceptrion   ${e.toString()}');
                                     Helper.Toast(Constants.somethingwentwrong,
                                         Constants.toast_red);
                                     print(e);
                                   }
                                 },
                                 child: Icon(
-                                  Constants.ic_tik,
+                                  Constants.ic_camera,
                                   color: Colors.white,
+                                ),
+                              )
+                            : Container(),
+                        imageClicked
+                            ? FloatingActionButton(
+                                onPressed: () async {
+                                  ///call API
+                                  try {
+                                    // Helper.showLoading(context);
+                                    // Navigator.pop(context);
+                                    Navigator.pop(context);
+
+                                    /// call API or go back
+                                  } catch (e) {
+                                    print(
+                                        'incidents with image  exception   ${e.toString()}');
+                                    Helper.Toast(Constants.somethingwentwrong,
+                                        Constants.toast_red);
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      imagePath_clicked_list.length.toString(),
+                                      style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    Icon(
+                                      Constants.ic_tik,
+                                      color: Colors.white,
+                                    ),
+                                  ],
                                 ),
                               )
                             : Container(),
@@ -174,46 +202,5 @@ class TakePictureScreenState extends State<TakePictureScreen> {
     );
   }
 
-  void startJobWithImage(
-      double total_miles, String reason, File img_file) async {
-    print('start with image ');
-    String fileName = img_file.path.split('/').last;
-    FormData formData = FormData.fromMap({
-      "file": await MultipartFile.fromFile(img_file.path, filename: fileName),
-    });
-    final parameters = {
-      'type': Constants.START_PATROL_WITH_PICTURE,
-      'office_name': officeName,
-      'job_id': widget.job.job_id.toString(),
-      'guard_id': gard_id,
-      'latitude': Helper.currentPositon.latitude.toString(),
-      'longitude': Helper.currentPositon.longitude.toString(),
-      'reason': reason,
-      'total_miles': total_miles,
-      'start_patrol_image': formData //img_file.readAsBytesSync()
-    };
-
-    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
-        headers: {}, body: parameters);
-    Navigator.pop(context);
-    print('start with image respose is here${respose.data['msg']}');
-    if (respose.data['RESULT'] == 'OK' && respose.data['status'] == 1) {
-      if (respose.data['msg']
-          .toString()
-          .toLowerCase()
-          .contains('shift started successfully')) {
-        Helper.Toast('Your shift started successfully', Constants.toast_grey);
-        LocalDatabase.saveString(
-            LocalDatabase.STARTED_JOB, widget.job.job_id.toString());
-        Navigator.of(context)
-            .pushNamed(FinishJobScreen.routeName, arguments: widget.job);
-      } else {
-        Helper.Toast(
-            'Cannot start shift, Kindly call office to get shift started',
-            Constants.toast_red);
-      }
-    } else {
-      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
-    }
-  }
+  void startJobWithImage() async {}
 }

@@ -4,6 +4,7 @@ import '../../APIs/RestClient.dart';
 import '../../Helper/Helper.dart';
 import '../../Models/NewJob.dart';
 import '../HomeScreen.dart';
+import 'AddIncidentScreen.dart';
 
 class IncedentShowScreen extends StatefulWidget {
   static const routeName = '/IncedentShowScreen';
@@ -44,7 +45,7 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
           InkWell(
               onTap: () {
                 ///open new screen to add visitor
-                //Navigator.pushNamed(context, AddIncidentScreen.routeName);
+                Navigator.pushNamed(context, AddIncidentScreen.routeName);
               },
               child: Container(
                 padding: const EdgeInsets.only(right: 10, left: 10),
@@ -95,7 +96,6 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
           Constants.BASE_URL + "guardappv4.php",
           headers: {},
           body: parameters);
-
       print('respose is here of check calls ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
       } else {
