@@ -21,9 +21,11 @@ class Constants {
   static String ACCEPT_GUARD = "guard_accept_job";
   static String TYPE_ACCEPTED_JOBS = "Accepted";
   static String CHECK_POINTS = "get_jobs_check_points";
+  static String SEND_INCIDENT = "save_job_incident";
   static String job_incidents_list = "job_incidents_list";
   static String INCIDENT_LIST = "incident_type_list";
   static String MANUAL_ACK_CHECKPOINT = "manual_acknowledge_check_points";
+  static String SEND_ACK = "acknowledge_check_points";
   static String somethingwentwrong = "Something went wrong";
 
   ///icons

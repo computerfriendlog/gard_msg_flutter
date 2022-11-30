@@ -15,4 +15,8 @@ class ImagesArray extends ChangeNotifier {
     notifyListeners();
   }
 
+  List<String> getImages() {
+    //notifyListeners();
+    return _imagePaths;
+  }
 }

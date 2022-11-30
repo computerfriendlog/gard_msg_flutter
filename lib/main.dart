@@ -1,3 +1,4 @@
+import 'package:gard_msg_flutter/Providers/ImagesArray.dart';
 import 'package:gard_msg_flutter/Screens/Camera/TakePictureScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/CurrentJobsScreen.dart';
 import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
@@ -7,11 +8,14 @@ import 'package:gard_msg_flutter/Screens/MessageScreen.dart';
 import 'package:gard_msg_flutter/Screens/SplashScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
-
+import 'package:provider/provider.dart';
 import 'Screens/Job/AddIncidentScreen.dart';
 import 'Screens/Job/CheckCallsScreen.dart';
 import 'Screens/Job/FinishJobScreen.dart';
 import 'Screens/Job/IncedentShowSceen.dart';
+
+/// To do
+// check call must beep before 15 minutes before time and remain enable after 15 minutes. then disable it
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,25 +29,28 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return OKToast(
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          fontFamily: 'CustomFont',
-          primarySwatch: Colors.red,
+      child: ChangeNotifierProvider(
+        create: (_) => ImagesArray(),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            fontFamily: 'CustomFont',
+            primarySwatch: Colors.red,
+          ),
+          routes: {
+            SplashScreen.routeName: (ctx) => SplashScreen(),
+            HomeScreen.routeName: (ctx) => HomeScreen(),
+            LoginScreen.routeName: (ctx) => LoginScreen(),
+            CurrentJobs.routeName: (ctx) => CurrentJobs(),
+            SiteSchedule.routeName: (ctx) => SiteSchedule(),
+            FinishJobScreen.routeName: (ctx) => FinishJobScreen(),
+            MessageScreen.routeName: (ctx) => MessageScreen(),
+            CheckCallsScreen.routeName: (ctx) => CheckCallsScreen(),
+            IncedentShowScreen.routeName: (ctx) => IncedentShowScreen(),
+            AddIncidentScreen.routeName: (ctx) => AddIncidentScreen(),
+          },
+          home: const SplashScreen(),
         ),
-        routes: {
-          SplashScreen.routeName: (ctx) => SplashScreen(),
-          HomeScreen.routeName: (ctx) => HomeScreen(),
-          LoginScreen.routeName: (ctx) => LoginScreen(),
-          CurrentJobs.routeName: (ctx) => CurrentJobs(),
-          SiteSchedule.routeName: (ctx) => SiteSchedule(),
-          FinishJobScreen.routeName: (ctx) => FinishJobScreen(),
-          MessageScreen.routeName: (ctx) => MessageScreen(),
-          CheckCallsScreen.routeName: (ctx) => CheckCallsScreen(),
-          IncedentShowScreen.routeName: (ctx) => IncedentShowScreen(),
-          AddIncidentScreen.routeName: (ctx) => AddIncidentScreen(),
-        },
-        home: const SplashScreen(),
       ),
     );
   }

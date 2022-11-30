@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/Helper/Constants.dart';
+import 'package:gard_msg_flutter/Widgets/IncidentsRowDesign.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Helper.dart';
+import '../../Helper/LocalDatabase.dart';
+import '../../Models/Incident.dart';
 import '../../Models/NewJob.dart';
 import '../HomeScreen.dart';
 import 'AddIncidentScreen.dart';
@@ -18,6 +21,8 @@ class IncedentShowScreen extends StatefulWidget {
 class _IncedentShowScreenState extends State<IncedentShowScreen> {
   NewJob? job;
   final restClient = RestClient();
+  bool isLoading = true;
+  List<Incident> incident_list = [];
 
   @override
   void initState() {
@@ -72,24 +77,35 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
         ],
       ),
       body: Container(
-        margin: const EdgeInsets.all(10),
-        width: width,
-        height: hight,
-        child: Column(
-          children: [],
-        ),
-      ),
+          margin: const EdgeInsets.all(5),
+          padding: const EdgeInsets.all(5),
+          width: width,
+          height: hight,
+          child: !isLoading
+              ? ListView.builder(
+                  //scrollDirection: Axis.vertical,
+                  shrinkWrap: true,
+                  itemCount: incident_list.length,
+                  physics: const ScrollPhysics(),
+                  itemBuilder: (ctx, index) {
+                    return IncidentsRowDesign(
+                      incident: incident_list[index],
+                    );
+                  },
+                )
+              : Helper.LoadingWidget(context)),
     ));
   }
 
   void loadIncidents() async {
     // await Helper.determineCurrentPosition();
-    print("jjjjjjjjjjmmmmmmm   ${job!.job_id}");
+    String job_idd = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
+    print('job id is   ${job_idd}');
     try {
       final parameters = {
         'type': Constants.job_incidents_list,
         'office_name': officeName,
-        'job_id': job!.job_id,
+        'job_id': job_idd,
         'guard_id': gard_id,
       };
       final respoce = await restClient.get(
@@ -97,14 +113,30 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
           headers: {},
           body: parameters);
       print('respose is here of check calls ${respoce.data} ');
+      incident_list.clear();
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        respoce.data['DATA'].forEach((value) {
+          print('incident value is hrer   ${value['notes']}');
+          incident_list.add(Incident(
+              id: value['id'],
+              job_id: value['job_id'],
+              name: value['name'],
+              incident_type: value['incident_type'],
+              logged_by: value['Logged_by'],
+              notes: value['notes']));
+        });
+        print('incidents are ${incident_list.length.toString()}');
       } else {
         Helper.Toast("Cannot load incidents", Constants.toast_red);
       }
+      isLoading = false;
+      setState(() {});
     } catch (e) {
       print('llllllllllllllllllllllllll');
       print(e);
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      isLoading = false;
+      setState(() {});
     }
   }
 }

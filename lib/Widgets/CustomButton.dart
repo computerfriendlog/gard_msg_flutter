@@ -4,8 +4,10 @@ class CustomButton extends StatelessWidget {
   final String lable;
   final void Function()? _function_handler;
   final double width;
+  Color? background;
 
-  CustomButton(this.lable, this.width, this._function_handler);
+  CustomButton(this.lable, this.width, this._function_handler,
+      {this.background});
 
   @override
   Widget build(BuildContext context) {
@@ -14,8 +16,9 @@ class CustomButton extends StatelessWidget {
       width: width,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          textStyle: const TextStyle(
-              fontWeight: FontWeight.w800, fontSize: 16), 
+          backgroundColor:
+              background ?? Theme.of(context).primaryColor,
+          textStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
         ),
         onPressed: _function_handler,
         child: Text(

@@ -7,8 +7,10 @@ import 'package:camera/camera.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Models/CheckPoint.dart';
+import '../../Widgets/CustomButton.dart';
 import '../Camera/TakePictureScreen.dart';
 import '../HomeScreen.dart';
+import 'package:intl/intl.dart';
 
 class CheckCallsScreen extends StatefulWidget {
   static const routeName = '/CheckCallsScreen';
@@ -194,25 +196,13 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
         ],
       ),
       body: Container(
-        margin: const EdgeInsets.all(10),
         width: width,
         height: hight,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Helper.LoadingWidget(context),
-                const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    'Timer',
-                    style: TextStyle(fontWeight: FontWeight.w100, fontSize: 18),
-                  ),
-                ),
-              ],
-            ),
-            Container(
+            Helper.LoadingWidget(context),
+            SizedBox(
               height: hight * 0.75,
               child: !isLoading
                   ? chkPoint_list.isNotEmpty
@@ -226,17 +216,179 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                 width: width * 0.9,
                                 checkPoint: chkPoint_list[index],
                                 function_handle: () {
-                                  //print('click oon ${index}');
-                                  Dialog errorDialog = Dialog(
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12.0)),
-                                      //this right here
-                                      child: Container());
-                                  showDialog(
-                                      context: context,
-                                      builder: (BuildContext context) =>
-                                          errorDialog);
+                                  DateTime tempDate =
+                                      DateFormat("dd-MM-yyyy hh:m:ss").parse(
+                                          chkPoint_list[index]
+                                              .time!
+                                              .toString());
+
+                                  //print('time is ${chkPoint_list[index].time}       ${tempDate.toString()}        ');
+                                  //print('difference in minuts   ${Helper.getCurrentTime().difference(tempDate).inMinutes}   ${tempDate.difference(Helper.getCurrentTime()).inMinutes}');
+                                  if (chkPoint_list[index].status == '0') {
+                                    if (Helper.getCurrentTime().day ==
+                                        tempDate.day) {
+                                      int dif_min = Helper.getCurrentTime()
+                                          .difference(tempDate)
+                                          .inMinutes;
+                                      if (dif_min < 0) {
+                                        dif_min = -(dif_min);
+                                      }
+
+                                      if (dif_min < 15) {
+                                        /// allow to check
+                                        Dialog checkPointSubmitDialog = Dialog(
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12.0)),
+                                          //this right here
+                                          child: SizedBox(
+                                            height: hight * 0.35,
+                                            width: width * 0.6,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              children: [
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.all(7),
+                                                  //width: _width * 0.6
+                                                  decoration: BoxDecoration(
+                                                      color: Theme.of(context)
+                                                          .primaryColor,
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .only(
+                                                        topLeft:
+                                                            Radius.circular(12),
+                                                        topRight:
+                                                            Radius.circular(12),
+                                                      )),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      Image.asset(
+                                                          height: 30,
+                                                          width: 30,
+                                                          'assets/images/ic_confirmation.png'),
+                                                      const Padding(
+                                                        padding:
+                                                            EdgeInsets.all(8.0),
+                                                        child: Text(
+                                                          'Confirmation',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.white,
+                                                              //Theme.of(context).cardColor
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w400),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                const SizedBox(
+                                                  height: 20,
+                                                ),
+                                                Container(
+                                                  height: hight * 0.2,
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          top: 10,
+                                                          bottom: 5,
+                                                          right: 10,
+                                                          left: 10),
+                                                  child: Column(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      const Text(
+                                                        'Do you want to upload picture with check point?',
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                        textAlign:
+                                                            TextAlign.center,
+                                                        style: TextStyle(
+                                                            color: Colors.black,
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .w100),
+                                                      ),
+                                                      //const SizedBox(),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        children: [
+                                                          CustomButton('Yes',
+                                                              width * 0.3,
+                                                              () async {
+                                                            /// predefined check point with image
+                                                            //TakePictureScreen
+                                                            final cameras =
+                                                                await availableCameras();
+                                                            final firstCamera =
+                                                                cameras.first;
+                                                            Navigator.of(context).push(MaterialPageRoute(
+                                                                builder: (context) => TakePictureScreen(
+                                                                    camera:
+                                                                        firstCamera,
+                                                                    reason:
+                                                                        '${chkPoint_list[index].check_point_id}}',
+                                                                    dis: 0.0,
+                                                                    job: NewJob(
+                                                                        job_id:
+                                                                            job!.job_id))));
+                                                          }),
+                                                          CustomButton(
+                                                              background:
+                                                                  Constants
+                                                                      .grey,
+                                                              'No',
+                                                              width * 0.3, () {
+                                                            /// predefined simple check point
+                                                            //sendSimpleCheckPoint();
+                                                            APICalls.sentPredefinedCheckPointAck(
+                                                                context,
+                                                                chkPoint_list[
+                                                                        index]
+                                                                    .check_point_id!,
+                                                                1,
+                                                                chkPoint_list[
+                                                                        index]
+                                                                    .job_id!,
+                                                                'na');
+                                                          }),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                        showDialog(
+                                            context: context,
+                                            builder: (BuildContext context) =>
+                                                checkPointSubmitDialog);
+                                      } else {
+                                        Helper.Toast('Please check-in on time',
+                                            Constants.toast_grey);
+                                      }
+                                    } else {
+                                      Helper.Toast('Please check-in on time',
+                                          Constants.toast_grey);
+                                    }
+                                  } else {
+                                    Helper.Toast('already checked-in',
+                                        Constants.toast_red);
+                                  }
                                 });
                           },
                         )

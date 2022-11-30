@@ -141,7 +141,7 @@ class Helper {
     return Geolocator.distanceBetween(lat1, lon1, lat2, lon2);
   }
 
-  static Widget LoadingWidget(BuildContext context){
+  static Widget LoadingWidget(BuildContext context) {
     return SizedBox(
       child: LoadingAnimationWidget.inkDrop(
         color: Theme.of(context).primaryColor,
@@ -152,4 +152,7 @@ class Helper {
     );
   }
 
+  static DateTime getCurrentTime() {
+    return DateTime.now();
+  }
 }

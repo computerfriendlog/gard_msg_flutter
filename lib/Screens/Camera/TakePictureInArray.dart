@@ -4,12 +4,14 @@ import 'package:camera/camera.dart';
 import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/Helper.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
+import 'package:gard_msg_flutter/Providers/ImagesArray.dart';
 import 'package:gard_msg_flutter/Screens/Job/FinishJobScreen.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Helper/LocalDatabase.dart';
 import '../HomeScreen.dart';
 import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
 
 // A screen that allows users to take a picture using a given camera.
 class TakePictureInArray extends StatefulWidget {
@@ -31,7 +33,7 @@ class TakePictureInArray extends StatefulWidget {
   TakePictureInArrayState createState() => TakePictureInArrayState();
 }
 
-List<String> imagePath_clicked_list = [];
+//List<String> imagePath_clicked_list = [];
 
 class TakePictureInArrayState extends State<TakePictureInArray> {
   late CameraController _controller;
@@ -109,16 +111,15 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
                                   try {
                                     imageClicked = true;
                                     await _initializeControllerFuture;
-                                    imagePath_clicked_list.add(
-                                        (await _controller.takePicture()).path);
-                                    print(
-                                        'image picked is ${imagePath_clicked_list[0]}');
+                                    Provider.of<ImagesArray>(context,listen: false).add((await _controller.takePicture()).path);
+                                    //imagePath_clicked_list.add((await _controller.takePicture()).path);
+                                    //print('image picked is ${Provider.of<ImagesArray>(context).getImages().first}');
                                     Navigator.pop(context);
                                     setState(() {});
                                   } catch (e) {
                                     Helper.Toast(Constants.somethingwentwrong,
                                         Constants.toast_red);
-                                    print(e);
+                                    print('image clicked exception $e');
                                   }
                                 },
                                 child: const Icon(Icons.camera_alt),
@@ -126,7 +127,10 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
                             : FloatingActionButton(
                                 onPressed: () async {
                                   imageClicked = false;
-                                  imagePath_clicked_list = [];
+                                  //imagePath_clicked_list = [];
+                                  Provider.of<ImagesArray>(context,
+                                          listen: false)
+                                      .removeAll();
                                   setState(() {});
                                 },
                                 child: const Icon(Icons.cancel),
@@ -139,8 +143,11 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
                                   try {
                                     imageClicked = true;
                                     await _initializeControllerFuture;
-                                    imagePath_clicked_list.add(
-                                        (await _controller.takePicture()).path);
+                                    Provider.of<ImagesArray>(context,
+                                            listen: false)
+                                        .add((await _controller.takePicture())
+                                            .path);
+                                    //imagePath_clicked_list.add((await _controller.takePicture()).path);
                                     //print('image picked is ${imagePath_clicked_list[0]}');
                                     Navigator.pop(context);
                                     setState(() {});
@@ -177,7 +184,12 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      imagePath_clicked_list.length.toString(),
+                                      //imagePath_clicked_list.length.toString(),
+                                      Provider.of<ImagesArray>(context,
+                                              listen: false)
+                                          .getImages()
+                                          .length
+                                          .toString(),
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold),

@@ -42,11 +42,14 @@ class TakePictureScreenState extends State<TakePictureScreen> {
   @override
   void initState() {
     super.initState();
+    initCamera();
+  }
+
+  void initCamera() {
     _controller = CameraController(
       widget.camera,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
     );
-    // Next, initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();
     loading = false;
     setState(() {});
@@ -141,16 +144,33 @@ class TakePictureScreenState extends State<TakePictureScreen> {
 
                                     //File(imagePath_clicked).readAsBytesSync();
                                     if (widget.job.job_status != null) {
+                                      //its for starting job
                                       startJobWithImage(
                                           widget.dis,
                                           widget.reason,
                                           File(imagePath_clicked));
+                                    } else if (widget.reason
+                                        .trim()
+                                        .isNotEmpty) {
+                                      //its predefined checkpoint
+                                      APICalls.sentPredefinedCheckPointAck(
+                                          context,
+                                          widget.reason,
+                                          1,
+                                          widget.job.job_id!,
+                                          imagePath_clicked);
                                     } else {
-                                      print('send acknowledgement... with image');
-                                      APICalls.sentAcknowledgement(context, widget.job.job_id!, imagePath_clicked);
+                                      //its manual check point
+                                      print(
+                                          'send acknowledgement... with image');
+                                      APICalls.sentAcknowledgement(
+                                          context,
+                                          widget.job.job_id!,
+                                          imagePath_clicked);
                                     }
                                   } catch (e) {
-                                    print('send acknowledgement... with image    exceptrion   ${e.toString()}');
+                                    print(
+                                        'send acknowledgement... with image    exceptrion   ${e.toString()}');
                                     Helper.Toast(Constants.somethingwentwrong,
                                         Constants.toast_red);
                                     print(e);
