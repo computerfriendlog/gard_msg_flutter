@@ -1,57 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:gard_msg_flutter/Helper/Constants.dart';
-import 'package:gard_msg_flutter/Widgets/IncidentsRowDesign.dart';
+import 'package:gard_msg_flutter/Models/Visitor.dart';
+import 'package:gard_msg_flutter/Widgets/VisitorsRowDesign.dart';
 import '../../APIs/RestClient.dart';
-import 'dart:io';
+import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
 import '../../Helper/LocalDatabase.dart';
 import '../../Models/Incident.dart';
-import '../../Models/NewJob.dart';
 import '../HomeScreen.dart';
-import 'AddIncidentScreen.dart';
+import 'AddVisitorScreen.dart';
 
-class IncedentShowScreen extends StatefulWidget {
-  static const routeName = '/IncedentShowScreen';
+class VisitorShowScreen extends StatefulWidget {
+  static const routeName = '/VisitorShowScreen';
 
-  const IncedentShowScreen({Key? key}) : super(key: key);
+  const VisitorShowScreen({Key? key}) : super(key: key);
 
   @override
-  State<IncedentShowScreen> createState() => _IncedentShowScreenState();
+  State<VisitorShowScreen> createState() => _VisitorShowScreenState();
 }
 
-class _IncedentShowScreenState extends State<IncedentShowScreen> {
-  NewJob? job;
+class _VisitorShowScreenState extends State<VisitorShowScreen> {
   final restClient = RestClient();
+  TextEditingController _controller_msg = TextEditingController();
+  final List<Visitor> visitors_list = []; //change type
   bool isLoading = true;
-  List<Incident> incident_list = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadIncidents();
+    loadVisitors();
   }
 
   @override
   Widget build(BuildContext context) {
-    job = ModalRoute.of(context)?.settings.arguments as NewJob?;
-    print('ffaffdfasfdafsaf ${job!.job_id}');
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     var hight = mediaQueryData.size.height;
     var width = mediaQueryData.size.width;
-
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Incidents',
+          'Visitors',
           style: TextStyle(fontWeight: FontWeight.w100, fontSize: 20),
         ),
         actions: [
           InkWell(
               onTap: () {
                 ///open new screen to add visitor
-                Navigator.pushNamed(context, AddIncidentScreen.routeName);
+                Navigator.pushNamed(context, AddVisitorScreen.routeName);
               },
               child: Container(
                 padding: const EdgeInsets.only(right: 10, left: 10),
@@ -86,25 +82,26 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
               ? ListView.builder(
                   //scrollDirection: Axis.vertical,
                   shrinkWrap: true,
-                  itemCount: incident_list.length,
+                  itemCount: visitors_list.length,
                   physics: const ScrollPhysics(),
                   itemBuilder: (ctx, index) {
-                    return IncidentsRowDesign(
-                      incident: incident_list[index],
-                    );
+                    //return Container();
+                     return VisitorsRowDesign(
+                       visitor: visitors_list[index],
+                     );
                   },
                 )
               : Helper.LoadingWidget(context)),
     ));
   }
 
-  void loadIncidents() async {
+  void loadVisitors() async {
     // await Helper.determineCurrentPosition();
     String job_idd = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
     print('job id is   ${job_idd}');
     try {
       final parameters = {
-        'type': Constants.job_incidents_list,
+        'type': Constants.FETCH_VISITORS,
         'office_name': officeName,
         'job_id': job_idd,
         'guard_id': gard_id,
@@ -113,20 +110,22 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
           Constants.BASE_URL + "guardappv4.php",
           headers: {},
           body: parameters);
-      print('respose is here of check calls ${respoce.data} ');
-      incident_list.clear();
+      print('respose is here of visitors ${respoce.data} ');
+      visitors_list.clear();
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
         respoce.data['DATA'].forEach((value) {
           print('incident value is hrer   ${value['notes']}');
-          incident_list.add(Incident(
-              id: value['id'],
-              job_id: value['job_id'],
-              name: value['name'],
-              incident_type: value['incident_type'],
-              logged_by: value['Logged_by'],
-              notes: value['notes']));
+          visitors_list.add(Visitor(
+            name: value['name'],
+            company: value['company'],
+            log_date: value['log_date'],
+            time_in: value['time_in'],
+            time_out: value['time_out'],
+            vehicle_reg: value['vehicle_reg'],
+            visit_purpose: value['visit_purpose'],
+          ));
         });
-        print('incidents are ${incident_list.length.toString()}');
+        print('incidents are ${visitors_list.length.toString()}');
       } else {
         Helper.Toast("Cannot load incidents", Constants.toast_red);
       }

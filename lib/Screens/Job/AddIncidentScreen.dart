@@ -274,11 +274,24 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
   }
 
   void submitIncident(List<String> imagesList) async {
+    Helper.showLoading(context);
     String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
     print('job id is   ${job_id}');
     //var img_file = await _controller_signature.toImage(height: 200, width: 600).asStream();
     final Uint8List? singatureImageInBytes =
         await _controller_signature.toPngBytes(height: 400, width: 1000);
+
+    List<FormData> formData_list = [];
+
+    if (imagesList.isNotEmpty) {
+      for (int i = 0; i < imagesList.length; i++) {
+        String fileName = imagesList[i].split('/').last;
+        formData_list.add(FormData.fromMap({
+          "file":
+              await MultipartFile.fromFile(imagesList[i], filename: fileName),
+        }));
+      }
+    }
     try {
       final parameters = {
         'type': Constants.SEND_INCIDENT,
@@ -287,7 +300,7 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
         'incident_type': selected_indedent,
         'notes': _controller_msg.text.trim(),
         'logged_by': name,
-        'image_name': imagesList,
+        'image_name': formData_list,
         'sign_img': singatureImageInBytes,
       };
       final respoce = await restClient.post(
@@ -296,6 +309,7 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
           body: parameters);
       print('response is here of check incidents list  ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        Provider.of<ImagesArray>(context, listen: false).removeAll();
         Helper.Toast('Incident Sent successfully', Constants.toast_grey);
         Navigator.pushNamed(context, IncedentShowScreen.routeName);
       } else {

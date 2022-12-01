@@ -216,11 +216,8 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                 width: width * 0.9,
                                 checkPoint: chkPoint_list[index],
                                 function_handle: () {
-                                  DateTime tempDate =
-                                      DateFormat("dd-MM-yyyy hh:m:ss").parse(
-                                          chkPoint_list[index]
-                                              .time!
-                                              .toString());
+                                  //doing here
+                                  DateTime tempDate = DateFormat("dd-MM-yyyy hh:m:ss").parse(chkPoint_list[index].time!.toString());
 
                                   //print('time is ${chkPoint_list[index].time}       ${tempDate.toString()}        ');
                                   //print('difference in minuts   ${Helper.getCurrentTime().difference(tempDate).inMinutes}   ${tempDate.difference(Helper.getCurrentTime()).inMinutes}');

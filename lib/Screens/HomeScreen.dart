@@ -1,6 +1,8 @@
 import 'dart:io';
-
+import 'package:provider/provider.dart';
+import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
+import 'package:gard_msg_flutter/Providers/guardStatus.dart';
 import 'package:gard_msg_flutter/Screens/Job/CurrentJobsScreen.dart';
 import 'package:gard_msg_flutter/Screens/LoginScreen.dart';
 import 'package:gard_msg_flutter/Screens/MessageScreen.dart';
@@ -25,9 +27,9 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-String month = '';
-String day = '';
-String date = '';
+String month = ' . . '; // don't change these values
+String day = ' . . ';
+String date = ' . . ';
 
 String deviceType = '';
 String name = '';
@@ -37,7 +39,7 @@ String password = '';
 String office_phone = '';
 
 class _HomeScreenState extends State<HomeScreen> {
-  bool availableForJob = true;
+  //bool availableForJob = true;
   final restClient = RestClient();
   int total_jobs = 0;
   int total_accepted_jobs = 0;
@@ -53,6 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('staus value is,,,,,,,,,,,,, ${Provider.of<GuardStatus>(context).getStatus()}');
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     var _hight = mediaQueryData.size.height;
     var _width = mediaQueryData.size.width;
@@ -107,20 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                     });
                                 if (result) {
                                   print('logout');
-                                  if (Helper.logOut() == true) {
-                                    Navigator.of(context)
-                                        .pushNamed(LoginScreen.routeName);
-                                  } else {
-                                    showToast(
-                                      "Logout failed, try again",
-                                      duration: const Duration(seconds: 1),
-                                      position: ToastPosition.top,
-                                      backgroundColor:
-                                          Colors.black.withOpacity(0.8),
-                                      radius: 3.0,
-                                      textStyle:
-                                          const TextStyle(fontSize: 14.0),
-                                    );
+                                  bool yes = await APICalls.logoutCall(context);
+                                  if (yes) {
+                                    if (Helper.logOut() == true) {
+                                      Navigator.of(context)
+                                          .pushNamed(LoginScreen.routeName);
+                                    } else {
+                                      Helper.Toast('Logout failed, try again',
+                                          Constants.toast_red);
+                                    }
                                   }
                                 } else {
                                   print('don\'t logout');
@@ -140,7 +138,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           LiteRollingSwitch(
                             //initial value
-                            value: availableForJob,
+                            value: Provider.of<GuardStatus>(context, listen: true).getStatus(),
+                            //availableForJob
                             textOn: 'Online',
                             textOff: 'Offline',
                             colorOn: Colors.greenAccent,
@@ -150,19 +149,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             textSize: 15.0,
                             textOffColor: Colors.white,
                             textOnColor: Colors.white,
-                            onChanged: (bool state) {
+                            onChanged: (bool state) async {
                               //Use it to manage the different states
                               print('Current State of SWITCH IS: $state');
-                              LocalDatabase.setAvailable(availableForJob);
+
+                              bool done = await APICalls.statusChange(
+                                  context, state ? "vacant" : "onbreak");
+                              print('Current strus.....: $done');
+                              if (done) {
+                                Provider.of<GuardStatus>(context)
+                                    .changeStatus(state);
+                              } else {
+                                Provider.of<GuardStatus>(context)
+                                    .changeStatus(!state);
+                              }
+                              setState(() {});
                             },
-                            onTap: () {
-                              makeSelfOnline();
+
+                            onTap: () async {
+                              //makeSelfOnline();
+                              //print('before State of SWITCH IS: ${await LocalDatabase.isAvailable()}');
                             },
                             onDoubleTap: () {
-                              makeSelfOnline();
+                              //makeSelfOnline();
                             },
                             onSwipe: () {
-                              makeSelfOnline();
+                              //makeSelfOnline();
                             },
                           ),
                         ],
@@ -504,7 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     onTap: () {
                                       //call to office
                                       //print('caaaaaaaaaaaaaaaaalin');
-                                      sendAlert();
+                                      APICalls.sendAlert(context);
                                     },
                                   ),
                                 ),
@@ -598,11 +610,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void makeSelfOnline() {
-    setState(() {
-      availableForJob = !availableForJob;
-    });
-  }
+  // void makeSelfOnline() {
+  //   setState(() {
+  //     availableForJob = !availableForJob;
+  //   });
+  // }
 
   void loadInitailData() async {
     name = await LocalDatabase.getString(LocalDatabase.NAME);
@@ -618,38 +630,45 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     print(
         'after login detail is here  $officeName  \n $gard_id      \n   $password   ');
-    availableForJob = await LocalDatabase.isAvailable() ?? false;
+    Provider.of<GuardStatus>(context, listen: false)
+        .changeStatus(await LocalDatabase.isAvailable() ?? false);
     DateTime now = DateTime.now();
     //print('day is ${DateFormat('EEEE').format(now)}');
 
     month = DateFormat.MMMM().format(now);
     date = DateFormat('dd').format(now);
     day = DateFormat('EEEE').format(now);
-    setState(() {});
-    getDashboardData();
+    getDashboardData(); //it has setState
     await Helper.determineCurrentPosition();
   }
 
   void getDashboardData() async {
-    final parameters = {
-      'type': Constants.DASHBOARD_TYPE,
-      'office_name': officeName,
-      'guard_id': gard_id,
-      'password': password,
-    };
+    try {
+      final parameters = {
+        'type': Constants.DASHBOARD_TYPE,
+        'office_name': officeName,
+        'guard_id': gard_id,
+        'password': password,
+      };
 
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
-        headers: {}, body: parameters);
-    print(
-        'dashboard responce is hereeee.         $respoce   mmmmmmmm  ${respoce.data['DATA'][0]}');
-    if (respoce.data['RESULT'] == 'OK' && respoce.data['msg'] == 'success') {
-      total_jobs = respoce.data['DATA'][0]['total_jobs'];
-      total_accepted_jobs = respoce.data['DATA'][0]['total_accepted_jobs'];
-      total__new_jobs = respoce.data['DATA'][0]['total_jobs_new'];
-      total_no_of_hours = respoce.data['DATA'][0]['total_no_of_hours'];
+      final respoce = await restClient.get(
+          Constants.BASE_URL + "guardappv4.php",
+          headers: {},
+          body: parameters);
+      print(
+          'dashboard responce is hereeee.         $respoce   mmmmmmmm  ${respoce.data['DATA'][0]}');
+
+      if (respoce.data['RESULT'] == 'OK' && respoce.data['msg'] == 'success') {
+        total_jobs = respoce.data['DATA'][0]['total_jobs'];
+        total_accepted_jobs = respoce.data['DATA'][0]['total_accepted_jobs'];
+        total__new_jobs = respoce.data['DATA'][0]['total_jobs_new'];
+        total_no_of_hours = respoce.data['DATA'][0]['total_no_of_hours'];
+      } else {
+        print("api not working... " + respoce.data['msg']);
+      }
       setState(() {});
-    } else {
-      print("api not working... " + respoce.data['msg']);
+    } catch (e) {
+      setState(() {});
     }
   }
 
@@ -696,37 +715,6 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(seconds: 1),
         position: ToastPosition.top,
         backgroundColor: Colors.black.withOpacity(0.8),
-        radius: 3.0,
-        textStyle: const TextStyle(fontSize: 14.0),
-      );
-    }
-  }
-
-  void sendAlert() async {
-    final parameters = {
-      'type': Constants.PANIC_ALERT,
-      'office_name': officeName,
-      'guard_id': gard_id,
-    };
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
-        headers: {}, body: parameters);
-
-    print('alert sent, respoce is here...  $respoce');
-    if (respoce.data['msg'] == 'Alert sent') {
-      showToast(
-        "Alert sent",
-        duration: const Duration(seconds: 1),
-        position: ToastPosition.top,
-        backgroundColor: Colors.green,
-        radius: 3.0,
-        textStyle: const TextStyle(fontSize: 14.0),
-      );
-    } else {
-      showToast(
-        "Alert can\'t send, please try again",
-        duration: const Duration(seconds: 1),
-        position: ToastPosition.top,
-        backgroundColor: Colors.green,
         radius: 3.0,
         textStyle: const TextStyle(fontSize: 14.0),
       );

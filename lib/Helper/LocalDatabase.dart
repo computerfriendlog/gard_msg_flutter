@@ -47,6 +47,7 @@ class LocalDatabase {
     try {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool(_userIsAvailableForJob, available);
+      print('new user state saved $available');
       return true;
     } catch (e) {
       print("name saving error $e.toString()");

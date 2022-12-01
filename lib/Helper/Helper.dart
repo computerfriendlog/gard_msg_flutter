@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
+import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
 import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
@@ -154,5 +155,58 @@ class Helper {
 
   static DateTime getCurrentTime() {
     return DateTime.now();
+  }
+
+  static void msgDialog(BuildContext context, double _hight, String msg) {
+    Dialog rejectDialog_with_reason = Dialog(
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+        child: Container(
+          height: _hight,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:  [
+                  Text(
+                    "Hi! ${name}",
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w100,
+                        fontSize: 16,
+                        color: Colors.black),
+                  ),
+                ],
+              ),
+               Text(
+                msg,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w100,
+                    fontSize: 16,
+                    color: Colors.black),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Text(
+                        'OK',
+                        style: TextStyle(
+                            fontWeight: FontWeight.w100,
+                            fontSize: 16,
+                            color: Colors.black),
+                      )),
+                ],
+              )
+            ],
+          ),
+        ));
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => rejectDialog_with_reason);
   }
 }

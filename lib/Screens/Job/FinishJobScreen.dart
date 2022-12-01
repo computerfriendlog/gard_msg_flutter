@@ -1,11 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/Helper.dart';
+import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:gard_msg_flutter/Screens/Job/CheckCallsScreen.dart';
+import 'package:gard_msg_flutter/Screens/Job/VisitorShowScreen.dart';
 
+import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../HomeScreen.dart';
 import 'IncedentShowSceen.dart';
+import 'UpdateProgressScreen.dart';
+import 'package:intl/intl.dart';
 
 class FinishJobScreen extends StatefulWidget {
   static const routeName = '/FinishJobScreen';
@@ -18,10 +25,17 @@ class FinishJobScreen extends StatefulWidget {
 
 class _FinishJobScreenState extends State<FinishJobScreen> {
   NewJob? job;
+  final restClient = RestClient();
+
+  String remainingTime = Constants
+      .COMPLATED; // completed meas job can be end now otherwise it will carry remaining time
+  DateTime? tempDate;
 
   @override
   Widget build(BuildContext context) {
     job = ModalRoute.of(context)?.settings.arguments as NewJob?;
+
+    checkJobRemainingTime();
 
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     var hight = mediaQueryData.size.height;
@@ -203,7 +217,11 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                     ),
                   ),
                   InkWell(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).pushNamed(
+                          VisitorShowScreen.routeName,
+                          arguments: job!);
+                    },
                     child: Container(
                       width: width * 0.9,
                       padding: const EdgeInsets.all(5),
@@ -273,7 +291,9 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          APICalls.sendAlert(context);
+                        },
                         child: Container(
                           width: width * 0.25,
                           padding: const EdgeInsets.only(top: 7, bottom: 7),
@@ -301,7 +321,10 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                         ),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.pushNamed(
+                              context, UpdateProgressScreen.routeName);
+                        },
                         child: Container(
                           width: width * 0.25,
                           padding: const EdgeInsets.only(top: 7, bottom: 7),
@@ -329,7 +352,9 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                         ),
                       ),
                       InkWell(
-                        onTap: () {},
+                        onTap: () {
+                          updateLocation();
+                        },
                         child: Container(
                           width: width * 0.25,
                           padding: const EdgeInsets.only(top: 7, bottom: 7),
@@ -410,9 +435,9 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                       fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'End  : ${job!.end_time.toString()}',
+                  'Time left $remainingTime',
                   style: const TextStyle(
-                      color: Colors.black,
+                      color: Colors.green,
                       fontSize: 16,
                       fontWeight: FontWeight.bold),
                 ),
@@ -453,13 +478,19 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
               child: ElevatedButton(
                   onPressed: () {
                     /// finish job here
+                    if (remainingTime == Constants.COMPLATED) {
+                      finishJob();
+                    } else {
+                      Helper.msgDialog(context, hight * 0.3,
+                          'Finish your job on time, Or ask your office to mark completed.');
+                    }
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.all(7.0),
+                  child:  Padding(
+                    padding: const EdgeInsets.all(7.0),
                     child: Text(
                       'Finish Job',
                       style: TextStyle(
-                          color: Colors.white,
+                          color:remainingTime==Constants.COMPLATED? Colors.white:Colors.white.withOpacity(0.6),
                           fontSize: 18,
                           fontWeight: FontWeight.w800),
                     ),
@@ -469,5 +500,95 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
         ),
       ),
     );
+  }
+
+  void updateLocation() async {
+    Helper.showLoading(context);
+    await Helper.determineCurrentPosition();
+    String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
+
+    try {
+      final parameters = {
+        'type': Constants.UPDATE_GUARD_LOCATION,
+        'office_name': officeName,
+        'guard_id': gard_id,
+        'job_id': job_id,
+        'latitude': Helper.currentPositon.latitude.toString(),
+        'longitude': Helper.currentPositon.latitude.toString(),
+      };
+      final respoce = await restClient.post(
+          Constants.BASE_URL + "guardappv4.php",
+          headers: {},
+          body: parameters);
+
+      print('response is here of location update  ${respoce.data} ');
+      if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        Helper.Toast('Your office has been notified about your location',
+            Constants.toast_grey);
+      } else {
+        Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      Navigator.pop(context);
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+    }
+  }
+
+  void finishJob() async {
+    Helper.showLoading(context);
+    await Helper.determineCurrentPosition();
+    String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
+
+    try {
+      final parameters = {
+        'type': Constants.END_PATROL,
+        'office_name': officeName,
+        'guard_id': gard_id,
+        'job_id': job_id,
+        'latitude': Helper.currentPositon.latitude.toString(),
+        'longitude': Helper.currentPositon.latitude.toString(),
+      };
+      final respoce = await restClient.post(
+          Constants.BASE_URL + "guardappv4.php",
+          headers: {},
+          body: parameters);
+
+      print('response is here of job finishing  ${respoce.data} ');
+      if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        Helper.Toast('Job finished successfully', Constants.toast_grey);
+      } else {
+        Helper.Toast(
+            "Can\'t finish job, Please try again", Constants.toast_red);
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      Navigator.pop(context);
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+    }
+  }
+
+  void checkJobRemainingTime() {
+    try{
+      tempDate = DateFormat("hh:m")
+          .parse(job!.end_time!.toString()); //dd-MM-yyyy hh:m:ss
+      //print('end time is ${tempDate!.hour}     ${Helper.getCurrentTime().hour}');
+      if (Helper.getCurrentTime().hour >= tempDate!.hour) {
+        if (Helper.getCurrentTime().minute >= (tempDate!.minute)) {
+          //job can end
+          remainingTime = Constants.COMPLATED; // completed meas job can be end now otherwise it will carry remaining time
+        } else {
+          remainingTime =
+          '00 :  ${(tempDate!.minute - Helper.getCurrentTime().minute).toString()}';
+        }
+      } else {
+        remainingTime = "${tempDate!.hour - Helper.getCurrentTime().hour} : 00";
+      }
+    }catch(e){
+      if (kDebugMode) {
+        print(e);
+      }
+    }
+   
   }
 }
