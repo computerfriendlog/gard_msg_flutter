@@ -111,10 +111,10 @@ class APICalls {
           headers: {},
           body: parameters);
       print('respose is here of client phone number ${respoce.data} ');
-      if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+      if (respoce.data['RESULT'] == 'OK') {
         Helper.Toast('Sent', Constants.toast_grey);
       } else {
-        Helper.Toast("Number not found", Constants.toast_grey);
+        Helper.Toast("Message can\'t send", Constants.toast_grey);
       }
       Navigator.pop(context);
     } catch (e) {

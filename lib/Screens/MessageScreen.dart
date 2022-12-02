@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/Constants.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
+import 'package:gard_msg_flutter/Widgets/CustomTextField.dart';
 import 'package:gard_msg_flutter/Widgets/SmsRowDesign.dart';
 
 import '../APIs/RestClient.dart';
@@ -22,6 +24,7 @@ class _MessageScreenState extends State<MessageScreen> {
   final restClient = RestClient();
   bool isLoding = true;
   List<Message> msg_list = [];
+  TextEditingController _controller_msg =TextEditingController();
 
   @override
   void initState() {
@@ -81,9 +84,7 @@ class _MessageScreenState extends State<MessageScreen> {
         height: hight,
         child: Column(
           children: [
-
-            Container(
-              height: hight*0.8,
+            Expanded(
               child: !isLoding
                   ? ListView.builder(
                       scrollDirection: Axis.vertical,
@@ -98,6 +99,51 @@ class _MessageScreenState extends State<MessageScreen> {
                       },
                     )
                   : Helper.LoadingWidget(context),
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    SizedBox(
+                      width: width*0.82,
+                      child: TextFormField(
+                        cursorColor: Colors.white,
+                        controller: _controller_msg,
+                        keyboardType: TextInputType.text,
+                        style: const TextStyle(fontSize: 15, color: Colors.black),
+                        decoration: InputDecoration(
+                            fillColor: Colors.white.withOpacity(0.6),
+                            filled: true,
+                            border: const OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(7.0)),
+                              borderSide: BorderSide(color: Color(0xff8d62d6), width: 3.0),
+                            ),
+                            contentPadding: const EdgeInsets.all(10),
+                            hintText: 'Enter text here',
+                            hintStyle: TextStyle(
+                                color: Colors.grey.withOpacity(0.8),
+                                fontWeight: FontWeight.w300)
+                          //labelText: hint,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                        width: width*0.14,
+                        child: TextButton(onPressed: ()async{
+                          if( _controller_msg.text.trim().isNotEmpty){
+                            await APICalls.sendSmsViaApp(context, _controller_msg.text.trim());
+                            _controller_msg.text='';
+                            loadSms();
+                          }else{
+                            Helper.Toast('Enter text', Constants.toast_grey);
+                          }
+
+                        }, child: const Icon(Icons.send_rounded,color: Colors.black,size: 30,)))
+                  ],
+                ),
+              ],
             ),
           ],
         ),

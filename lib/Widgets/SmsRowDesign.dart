@@ -59,8 +59,8 @@ class SmsRowDesign extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          //mainAxisAlignment: MainAxisAlignment.start,
-          //crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.start,
+           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Align(
                 alignment: message!.from_type == 'Driver'
