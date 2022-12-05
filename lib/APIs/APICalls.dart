@@ -95,7 +95,6 @@ class APICalls {
   }
 
   static Future sendSmsViaApp(BuildContext context, String msg) async {
-    Helper.showLoading(context);
     String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
     try {
       final parameters = {
@@ -116,9 +115,7 @@ class APICalls {
       } else {
         Helper.Toast("Message can\'t send", Constants.toast_grey);
       }
-      Navigator.pop(context);
     } catch (e) {
-      Navigator.pop(context);
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_grey);
     }
   }

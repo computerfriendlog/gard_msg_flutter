@@ -55,14 +55,22 @@ class SmsRowDesign extends StatelessWidget {
                 ? const Radius.circular(20)
                 : const Radius.circular(0),
           ),
-          color: Constants.grey.withOpacity(0.2),
+          color: message!.from_type == 'Driver'? Theme.of(context).primaryColor.withOpacity(0.8) :Constants.grey.withOpacity(0.2),
         ),
-        child: Column(
+        child: Text(
+          '${message!.msg_text!}\n ${message!.date!.split(' ').last.split(':').first ?? ''}:${message!.date!.split(' ').last.split(':')[1] ?? ''} ',
+          textAlign: TextAlign.end,
+          style: TextStyle(
+              fontWeight: FontWeight.w100,
+              fontSize: 14,
+              color:message!.from_type == 'Driver'? Colors.white : Colors.black.withOpacity(0.8)),
+        ),
+        /*Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.start,
            crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Align(
+              Align(
                 alignment: message!.from_type == 'Driver'
                     ? Alignment.centerRight
                     : Alignment.centerLeft,
@@ -101,7 +109,7 @@ class SmsRowDesign extends StatelessWidget {
               ),
             ),
           ],
-        ),
+        ),*/
       ),
     );
     //);

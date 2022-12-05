@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:provider/provider.dart';
 import 'Providers/guardStatus.dart';
+import 'Screens/AvailabilityScreen.dart';
+import 'Screens/CalenderScreen.dart';
 import 'Screens/Job/AddIncidentScreen.dart';
 import 'Screens/Job/AddVisitorScreen.dart';
 import 'Screens/Job/CheckCallsScreen.dart';
@@ -74,6 +76,8 @@ class MyApp extends StatelessWidget {
             VisitorShowScreen.routeName: (ctx) => VisitorShowScreen(),
             AddVisitorScreen.routeName: (ctx) => AddVisitorScreen(),
             UpdateProgressScreen.routeName: (ctx) => UpdateProgressScreen(),
+            CalenderScreen.routeName: (ctx) => CalenderScreen(),
+            AvailabilityScreen.routeName: (ctx) => AvailabilityScreen(),
           },
           home: const SplashScreen(),
         ),

@@ -5,7 +5,6 @@ import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
 import 'package:gard_msg_flutter/Widgets/CustomTextField.dart';
 import 'package:gard_msg_flutter/Widgets/SmsRowDesign.dart';
-
 import '../APIs/RestClient.dart';
 import '../Helper/Helper.dart';
 import '../Models/Message.dart';

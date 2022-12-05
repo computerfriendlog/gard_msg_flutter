@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:gard_msg_flutter/Screens/CalenderScreen.dart';
 import 'package:provider/provider.dart';
 import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
@@ -17,6 +18,7 @@ import 'package:oktoast/oktoast.dart';
 import '../APIs/RestClient.dart';
 import '../Helper/Constants.dart';
 import '../Helper/Helper.dart';
+import 'AvailabilityScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   static const routeName = '/HomeScreen';
@@ -550,7 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  print('clndr  on tap');
+                                 Navigator.pushNamed(context, CalenderScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -575,7 +577,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  print('ofic msg on tap');
+                                  Navigator.pushNamed(context, AvailabilityScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
