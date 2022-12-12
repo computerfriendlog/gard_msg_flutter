@@ -127,6 +127,8 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
               notes: value['notes']));
         });
         print('incidents are ${incident_list.length.toString()}');
+      }else if(respoce.data['status'] == 0){
+        Helper.Toast("Data not found", Constants.toast_red);
       } else {
         Helper.Toast("Cannot load incidents", Constants.toast_red);
       }

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import '../Helper/Constants.dart';
 import '../Helper/Helper.dart';
@@ -209,6 +211,49 @@ class APICalls {
     } catch (e) {
       Navigator.pop(context);
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      return false;
+    }
+  }
+
+  static Future<bool> trackLocation(
+      String lat, String long, String job_id) async {
+    officeName = await LocalDatabase.getString(LocalDatabase.USER_OFFICE);
+    gard_id = await LocalDatabase.getString(LocalDatabase.GUARD_ID);
+    if (Platform.isAndroid) {
+      deviceType = 'Android';
+    } else if (Platform.isIOS) {
+      deviceType = 'IOS';
+    }
+    try {
+      final parameters = {
+        'type': Constants.DRIVER_LOCATION_CHANGE,
+        'guard_id': gard_id,
+        'latitude': lat,
+        'longitude': long,
+        'office_name': officeName,
+        'device_type': deviceType,
+        'job_id': job_id,
+        'track_type': 'normal',
+      };
+      final restClient = RestClient();
+      final respoce = await restClient.get(
+          Constants.BASE_URL + "guardappv4.php",
+          headers: {},
+          body: parameters);
+
+      print('location sent , response is here...  $respoce');
+
+      if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        Helper.Toast('Tracking doing well', Constants.toast_grey);
+        //save in local db
+        return true;
+      } else {
+        Helper.Toast(
+            'Tracking can\'t do so, please try again', Constants.toast_red);
+        return false;
+      }
+    } catch (e) {
+      Helper.Toast("Tracking, "+Constants.somethingwentwrong, Constants.toast_red);
       return false;
     }
   }

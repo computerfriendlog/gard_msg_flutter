@@ -8,9 +8,14 @@ class Constants {
   static String noInternetConnection = 'Check your internet connection';
   static String COMPLATED = "completed";
   static String DRIVER_STATUS_CHANGE = "driver_status_change";
+  static String DRIVER_LOCATION_CHANGE = "save_driver_location";
   static String LOGIN_TYPE = "guard_login";
   static String DASHBOARD_TYPE = "dashboard";
+  static String DRIVER_ATTENDANCE = "get_driver_attendance";
   static String RETURN_LINK = "return_link";
+  static String AVAILABILITY_STORE = "available_store";
+  static String HOLIDAY_STORE = "holiday_store";
+  static String REQUEST_TIME_OFF = "request_time_off_store";
   static String UPDATE_DRIVER_DOC = "update_driver_loc";
   static String PANIC_ALERT = "panic_alert";
   static String DRIVER_LOGOUT = "driver_logout";
@@ -26,6 +31,7 @@ class Constants {
   static String ACCEPT_GUARD = "guard_accept_job";
   static String TYPE_ACCEPTED_JOBS = "Accepted";
   static String CHECK_POINTS = "get_jobs_check_points";
+  static String SAVE_NFC_RECORD = "save_nfc_record";
   static String SEND_INCIDENT = "save_job_incident";
   static String SAVE_VISITORS = "save_visitors_log";
   static String UPDATE_GUARD_LOCATION = "update_driver_loc";

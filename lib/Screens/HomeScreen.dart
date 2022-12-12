@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:gard_msg_flutter/Screens/CalenderScreen.dart';
+import 'package:gard_msg_flutter/Services/LocalNotificationService.dart';
 import 'package:provider/provider.dart';
 import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
@@ -11,13 +12,19 @@ import 'package:gard_msg_flutter/Widgets/boxForHomeScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:lite_rolling_switch/lite_rolling_switch.dart';
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+    as bg;
+import 'package:flutter/foundation.dart';
 
 //import 'package:fluttertoast/fluttertoast.dart';
 import 'package:oktoast/oktoast.dart';
-
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import '../APIs/RestClient.dart';
 import '../Helper/Constants.dart';
 import '../Helper/Helper.dart';
+import '../Models/CheckPoint.dart';
+import '../Services/LocationService.dart';
+import '../main.dart';
 import 'AvailabilityScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -48,16 +55,19 @@ class _HomeScreenState extends State<HomeScreen> {
   int total__new_jobs = 0;
   int total_no_of_hours = 0;
 
+  //LocationService locationService=LocationService();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     loadInitailData();
+    checkHaveStartedJob();//then start tracking init
   }
 
   @override
   Widget build(BuildContext context) {
-    print('staus value is,,,,,,,,,,,,, ${Provider.of<GuardStatus>(context).getStatus()}');
+    print(
+        'staus value is,,,,,,,,,,,,, ${Provider.of<GuardStatus>(context).getStatus()}');
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     var _hight = mediaQueryData.size.height;
     var _width = mediaQueryData.size.width;
@@ -140,7 +150,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           LiteRollingSwitch(
                             //initial value
-                            value: Provider.of<GuardStatus>(context, listen: true).getStatus(),
+                            value:
+                                Provider.of<GuardStatus>(context, listen: true)
+                                    .getStatus(),
                             //availableForJob
                             textOn: 'Online',
                             textOff: 'Offline',
@@ -552,7 +564,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                 Navigator.pushNamed(context, CalenderScreen.routeName);
+                                  Navigator.pushNamed(
+                                      context, CalenderScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -566,8 +579,23 @@ class _HomeScreenState extends State<HomeScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               InkWell(
-                                onTap: () {
-                                  print('job on tap');
+                                onTap: () async {
+                                  /* Helper.Toast(
+                                      'schedule with notification for 5 min',
+                                      Colors.pink);
+                                  */ /*localNotificationService
+                                      .periodicallyNotification(
+                                          'title periodic...', 'pppp body');*/ /*
+                                  localNotificationService.scheduleNotification(
+                                      'test title 5',
+                                      'test body...',
+                                      Helper.getCurrentTime().add(Duration(minutes: 2)),
+                                      045);*/
+                                  Helper.Toast(
+                                      'Tracking started...', Colors.green);
+                                  ////
+                                  // 2.  Configure the plugin
+                                  //
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -577,7 +605,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(context, AvailabilityScreen.routeName);
+                                  Navigator.pushNamed(
+                                      context, AvailabilityScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -587,13 +616,35 @@ class _HomeScreenState extends State<HomeScreen> {
                                         'assets/images/ic_availability.png'),
                               ),
                               InkWell(
-                                onTap: () {
-                                  print('clndr  on tap');
+                                onTap: () async {
+                                  //int delay = 2;
+                                  // Helper.Toast(
+                                  //     'schedule with alarm for ${delay} min',
+                                  //     Colors.green);
+                                  // int helloAlarmID = 2;
+                                  // /*localNotificationService.scheduleNotification(
+                                  //     'Dear user Tap here ',
+                                  //     'To check your job point',
+                                  //     tempTimeOfCheckPoint.subtract(Duration(minutes: 15)),
+                                  //     int.parse(value['check_point_id']) );*/
+                                  //
+                                  // await AndroidAlarmManager.oneShotAt(
+                                  //     Helper.getCurrentTime()
+                                  //         .add(Duration(minutes: delay)),
+                                  //     helloAlarmID,
+                                  //     exact: true,
+                                  //     wakeup: true,
+                                  //     printHello);
+                                  //localNotificationService.scheduleNotification('title... schedule', 'its body',delay);
+                                  //Helper.Toast('tracking stopped', Colors.red);
+                                  Helper.Toast(
+                                      'location update stopped', Colors.red);
+                                  bg.BackgroundGeolocation.stop();
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
                                     hight_box: _width * 0.3,
-                                    lableText: 'Document',
+                                    lableText: 'stop loc', //Document
                                     picture: 'assets/images/ic_document.png'),
                               ),
                             ],
@@ -721,5 +772,131 @@ class _HomeScreenState extends State<HomeScreen> {
         textStyle: const TextStyle(fontSize: 14.0),
       );
     }
+  }
+
+  void loadCheckCallsOfStartedJob(
+    String job_id,
+  ) async {
+    print('etting check points');
+    await Helper.determineCurrentPosition();
+
+    final parameters = {
+      'type': Constants.CHECK_POINTS,
+      'office_name': officeName,
+      'guard_id': gard_id,
+      'job_id': job_id,
+      'latitude': Helper.currentPositon.latitude,
+      'longitude': Helper.currentPositon.longitude,
+    };
+    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
+        headers: {}, body: parameters);
+
+    print(
+        'response is here of check calls on home page is here  ${respoce.data} ');
+    if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+      respoce.data['DATA'].forEach((value) {
+        /*chkPoint_list.add(CheckPoint(
+            barcode: respoce.data['DATA'][i]['barcode'],
+            check_point_id: respoce.data['DATA'][i]['check_point_id'],
+            guard_id: respoce.data['DATA'][i]['guard_id'],
+            job_id: respoce.data['DATA'][i]['job_id'],
+            name: respoce.data['DATA'][i]['name'],
+            status: respoce.data['DATA'][i]['status'],
+            time: respoce.data['DATA'][i]['time']));*/
+
+        print('check point 1 is  ${value['status']}');
+        if (value['status'] == '0') {
+          //its upcoming check point
+          print('check point alarm time is  ${value['time']}');
+          DateTime tempTimeOfCheckPoint =
+              DateFormat("dd-MM-yyyy hh:m:ss").parse(value['time']);
+
+          print(
+              'time ${tempTimeOfCheckPoint}, difference of  ${value['check_point_id']} is...   ${tempTimeOfCheckPoint.difference(Helper.getCurrentTime())}');
+          if (!tempTimeOfCheckPoint
+              .difference(Helper.getCurrentTime())
+              .isNegative) {
+            //check point is coming...
+            localNotificationService.scheduleNotification(
+                'Dear user Tap here ',
+                'To check your job point',
+                tempTimeOfCheckPoint.subtract(Duration(minutes: 15)),
+                int.parse(value['check_point_id']));
+          }
+        }
+      });
+    }
+    //print('check point 1 is  }');
+  }
+
+  void checkHaveStartedJob() async {
+    //57440 start this job recently
+    //await LocalDatabase.saveString(LocalDatabase.STARTED_JOB, '57440');
+    String id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
+
+    print('id is  $id ');
+    if (id != 'null') {
+      //have start job
+      loadCheckCallsOfStartedJob(id);
+      checkJobAndTrack();
+    }
+  }
+
+  void checkJobAndTrack() async {
+      bg.BackgroundGeolocation.onLocation((bg.Location location) {
+        print('[location sanwal] - ${location}');
+        print('[location sanwal] - ${location.coords.latitude}');
+        Helper.trackAndNotify(location.coords.latitude.toString(),
+            location.coords.longitude.toString());
+        //57440 start this job recently
+        //await LocalDatabase.saveString(LocalDatabase.STARTED_JOB, '57440');
+      });
+      // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
+      bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
+        print('[motionchange sanwal] - ${location}');
+      });
+      // Fired whenever the state of location-services changes.  Always fired at boot
+      bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
+        print('[providerchange sanwal] - ${event}');
+      });
+      bg.BackgroundGeolocation.ready(bg.Config(
+        notification: bg.Notification(
+          title: 'Teacking',
+          channelId: 'chnl',
+          channelName: 'abd',
+          sticky: true,
+          smallIcon: 'ic_notification',
+        ),
+        reset: true,
+        // <-- set true to ALWAYS apply supplied config; not just at first launch.
+        fastestLocationUpdateInterval: 5 * 1000,
+        //500  //it have to set 10 min
+        locationUpdateInterval: 15 * 1000,
+        //1000
+        //1000 is 1 sec
+        heartbeatInterval: 20 * 1000,
+        desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+        distanceFilter: 0.01,
+        //0.001
+        stopOnTerminate: false,
+        forceReloadOnSchedule: true,
+        startOnBoot: true,
+        isMoving: true,
+        // very effectiv,
+        debug: true,
+        stopTimeout: 12 * 60,
+        logLevel: bg.Config.LOG_LEVEL_VERBOSE,
+        enableHeadless: true,
+        // foregroundService: true,
+        //   preventSuspend: true,
+      )).then((bg.State state) async {
+        print('location service started .....state is ${state}');
+        if (!state.enabled) {
+          bg.BackgroundGeolocation.start();
+          // Force moving state immediately.  Plugin will now begin recording a location each distanceFilter meters.
+          await bg.BackgroundGeolocation.changePace(true);
+        }
+      });
+
   }
 }

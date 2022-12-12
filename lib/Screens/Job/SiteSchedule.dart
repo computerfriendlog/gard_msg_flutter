@@ -191,7 +191,10 @@ class _SiteScheduleState extends State<SiteSchedule> {
                       child: ElevatedButton(
                           onPressed: () {
                             Helper.showLoading(context);
-                            checkAvailability();
+                            //checkAvailability();
+
+                            ///for testing only
+                            startJob('on time, not late', 0);
                           },
                           child: const Text(
                             'Start Job',
@@ -268,7 +271,6 @@ class _SiteScheduleState extends State<SiteSchedule> {
       'job_id': this_job!.job_id.toString(),
       'latitude': Helper.currentPositon.latitude.toString(),
       'longitude': Helper.currentPositon.longitude.toString(),
-
     };
 
     final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
@@ -503,9 +505,12 @@ class _SiteScheduleState extends State<SiteSchedule> {
         Helper.Toast("errors related to job_id, guard_id , site name",
             Constants.toast_grey);
       } else if (respose.data['status'] == 1) {
-        startJob('on time, not late', 0);
-      } else if (respose.data['status'] == 2)
-      {
+        if (LocalDatabase.getString(LocalDatabase.STARTED_JOB) == 'null') {
+          startJob('on time, not late', 0);
+        } else {
+          Helper.Toast('Once complete your first job', Constants.toast_grey);
+        }
+      } else if (respose.data['status'] == 2) {
         ///start job with image and reason, fare from location
         TextEditingController _controller_reason_of_late =
             TextEditingController();
@@ -617,7 +622,8 @@ class _SiteScheduleState extends State<SiteSchedule> {
             builder: (BuildContext context) => rejectDialog_with_reason);
       } else if (respose.data['status'] == 3) {
         Navigator.pop(context);
-        Helper.msgDialog(context, _hight*0.3, 'I\'m afraid we cannot start your shift, Kindly call office to get shift started');
+        Helper.msgDialog(context, _hight * 0.3,
+            'I\'m afraid we cannot start your shift, Kindly call office to get shift started');
       }
     } else {
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_grey);

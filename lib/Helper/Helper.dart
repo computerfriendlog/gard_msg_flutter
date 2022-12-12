@@ -5,10 +5,15 @@ import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
 import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
-
+import 'package:flutter_background_geolocation/flutter_background_geolocation.dart'
+as bg;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 //import 'package:geocoding/geocoding.dart';
 import 'package:oktoast/oktoast.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+
+import '../APIs/APICalls.dart';
+import '../Services/LocalNotificationService.dart';
 
 class Helper {
   static Position currentPositon = Position(
@@ -74,25 +79,35 @@ class Helper {
     bool serviceEnabled;
     LocationPermission permission;
     // Test if location services are enabled.
+    print('0.......');
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       await Geolocator.openLocationSettings();
       return Future.error('Location services are disabled.');
     }
+    print('1.......');
 
     permission = await Geolocator.checkPermission();
+    print('2.......');
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         return Future.error('Location permissions are denied');
       }
     }
+    print('4.......');
 
     if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
+      return Future.error('Location permissions are permanently denied, we cannot request permissions.');
     }
-    currentPositon = await Geolocator.getCurrentPosition();
+    print('5.......');
+    try{
+      currentPositon = await Geolocator.getCurrentPosition(timeLimit: Duration(seconds: 10));
+    }catch(e){
+      print('6.......');
+    }
+    print('7.......');
+
     // List<Placemark> placemarks = await placemarkFromCoordinates(
     //     currentPositon.latitude, currentPositon.longitude);
     // print('current address ');
@@ -169,7 +184,7 @@ class Helper {
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
-                children:  [
+                children: [
                   Text(
                     "Hi! ${name}",
                     style: const TextStyle(
@@ -179,7 +194,7 @@ class Helper {
                   ),
                 ],
               ),
-               Text(
+              Text(
                 msg,
                 style: const TextStyle(
                     fontWeight: FontWeight.w100,
@@ -208,5 +223,25 @@ class Helper {
     showDialog(
         context: context,
         builder: (BuildContext context) => rejectDialog_with_reason);
+  }
+
+  static Future<TimeOfDay> selectTime(BuildContext context) async {
+    TimeOfDay selectedTime = TimeOfDay.now();
+    final TimeOfDay? picked_s = await showTimePicker(
+      context: context,
+      initialTime: selectedTime,
+    );
+
+    if (picked_s != null) selectedTime = picked_s;
+    return selectedTime;
+  }
+
+  static trackAndNotify(String lat,String long){
+    LocalNotificationService localNotification = LocalNotificationService();
+    localNotification.initializNotifications();
+    localNotification.sendNotification('Now you are here ',
+        "${lat},${long}");
+    APICalls.trackLocation(lat,
+        long, '57440');
   }
 }

@@ -48,7 +48,7 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
     super.initState();
     _controller = CameraController(
       widget.camera,
-      ResolutionPreset.low,
+      ResolutionPreset.medium,
     );
     // Next, initialize the controller. This returns a Future.
     _initializeControllerFuture = _controller.initialize();

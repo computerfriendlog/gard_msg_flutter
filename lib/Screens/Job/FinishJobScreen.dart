@@ -6,7 +6,7 @@ import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:gard_msg_flutter/Screens/Job/CheckCallsScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/VisitorShowScreen.dart';
-
+import 'package:flutter_nfc_reader/flutter_nfc_reader.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../HomeScreen.dart';
@@ -30,6 +30,18 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
   String remainingTime = Constants
       .COMPLATED; // completed meas job can be end now otherwise it will carry remaining time
   DateTime? tempDate;
+  NFCAvailability? nfc_available;
+  var hight;
+  var width;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   checkNFCAvailability();
+    // });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +50,8 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
     checkJobRemainingTime();
 
     MediaQueryData mediaQueryData = MediaQuery.of(context);
-    var hight = mediaQueryData.size.height;
-    var width = mediaQueryData.size.width;
+    hight = mediaQueryData.size.height;
+    width = mediaQueryData.size.width;
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -286,6 +298,49 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                       ),
                     ),
                   ),
+                  InkWell(
+                    onTap: () {
+                      //nfc call
+                      print('nfc click');
+                      nfcCall();
+                    },
+                    child: Container(
+                      width: width * 0.9,
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                          color: Theme.of(context).primaryColor,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(5)),
+                          shape: BoxShape.rectangle),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Image.asset(
+                                  height: 30,
+                                  width: 30,
+                                  'assets/images/ic_nfc.png'),
+                              const Padding(
+                                padding: EdgeInsets.all(5.0),
+                                child: Text(
+                                  'NFC',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                      color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 35,
+                            width: 35,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -485,12 +540,14 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                           'Finish your job on time, Or ask your office to mark completed.');
                     }
                   },
-                  child:  Padding(
+                  child: Padding(
                     padding: const EdgeInsets.all(7.0),
                     child: Text(
                       'Finish Job',
                       style: TextStyle(
-                          color:remainingTime==Constants.COMPLATED? Colors.white:Colors.white.withOpacity(0.6),
+                          color: remainingTime == Constants.COMPLATED
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.6),
                           fontSize: 18,
                           fontWeight: FontWeight.w800),
                     ),
@@ -556,12 +613,15 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
 
       print('response is here of job finishing  ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+        LocalDatabase.saveString(LocalDatabase.STARTED_JOB, "null");
+        Navigator.pop(context);
+        Navigator.pushNamed(context, HomeScreen.routeName);
         Helper.Toast('Job finished successfully', Constants.toast_grey);
       } else {
+        Navigator.pop(context);
         Helper.Toast(
             "Can\'t finish job, Please try again", Constants.toast_red);
       }
-      Navigator.pop(context);
     } catch (e) {
       Navigator.pop(context);
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
@@ -569,26 +629,65 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
   }
 
   void checkJobRemainingTime() {
-    try{
+    try {
       tempDate = DateFormat("hh:m")
           .parse(job!.end_time!.toString()); //dd-MM-yyyy hh:m:ss
       //print('end time is ${tempDate!.hour}     ${Helper.getCurrentTime().hour}');
       if (Helper.getCurrentTime().hour >= tempDate!.hour) {
         if (Helper.getCurrentTime().minute >= (tempDate!.minute)) {
           //job can end
-          remainingTime = Constants.COMPLATED; // completed meas job can be end now otherwise it will carry remaining time
+          remainingTime = Constants
+              .COMPLATED; // completed meas job can be end now otherwise it will carry remaining time
         } else {
           remainingTime =
-          '00 :  ${(tempDate!.minute - Helper.getCurrentTime().minute).toString()}';
+              '00 :  ${(tempDate!.minute - Helper.getCurrentTime().minute).toString()}';
         }
       } else {
         remainingTime = "${tempDate!.hour - Helper.getCurrentTime().hour} : 00";
       }
-    }catch(e){
+    } catch (e) {
       if (kDebugMode) {
         print(e);
       }
     }
-   
+  }
+
+  void nfcCall() async {
+    nfc_available = await FlutterNfcReader.checkNFCAvailability();
+    print(
+        'nfc click   ${nfc_available.toString()}    ${nfc_available!.index.toString()}');
+    if (nfc_available!.index.toString() == 'NFCAvailability.not_supported') {
+      // nfc number
+      FlutterNfcReader.read(instruction: "It's reading").then((value) => {
+            print('after reading...   ${value} '),
+            //Helper.Toast('after reading   ${value}', Constants.toast_grey),
+            Helper.msgDialog(context, hight * 0.5,
+                'received info from nfc \n  ${value.toString()}'),
+            nfcAPICall(value.toString()),
+          });
+    } else {
+      Helper.Toast('NFC not supported', Constants.toast_grey);
+    }
+  }
+
+  void nfcAPICall(String nfc_number) async {
+    await Helper.determineCurrentPosition();
+    final parameters = {
+      'type': Constants.SAVE_NFC_RECORD,
+      'office_name': officeName,
+      'job_id': job!.job_id,
+      'nfc_number': nfc_number,
+      'latitude': Helper.currentPositon.latitude.toString(),
+      'longitude': Helper.currentPositon.longitude.toString(),
+    };
+    final respoce = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+        headers: {}, body: parameters);
+
+    print('response is here of nfc api  ${respoce.data} ');
+    if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+      Helper.Toast('NFC updated', Constants.toast_grey);
+    } else {
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+    }
   }
 }

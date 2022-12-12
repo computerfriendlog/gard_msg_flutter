@@ -6,6 +6,7 @@ import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import 'package:gard_msg_flutter/Widgets/CustomTextField.dart';
 import 'package:camera/camera.dart';
 import '../../APIs/RestClient.dart';
+import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
 import '../../Helper/LocalDatabase.dart';

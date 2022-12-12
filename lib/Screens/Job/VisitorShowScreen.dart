@@ -126,8 +126,10 @@ class _VisitorShowScreenState extends State<VisitorShowScreen> {
           ));
         });
         print('incidents are ${visitors_list.length.toString()}');
+      }else if(respoce.data['status'] == 0){
+        Helper.Toast("Data not found", Constants.toast_red);
       } else {
-        Helper.Toast("Cannot load incidents", Constants.toast_red);
+        Helper.Toast("Cannot load visitors", Constants.toast_red);
       }
       isLoading = false;
       setState(() {});
