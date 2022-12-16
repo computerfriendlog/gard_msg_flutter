@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:gard_msg_flutter/Screens/WebViewScreen.dart';
 import '../Helper/Constants.dart';
 import '../Helper/Helper.dart';
 import '../Helper/LocalDatabase.dart';
@@ -32,7 +34,7 @@ class APICalls {
     try {
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('respose is here send check without  calls ${respoce.data} ');
@@ -77,7 +79,7 @@ class APICalls {
     try {
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('aaaaaaaaaaaaaaaaaaaa${respoce.data} ');
@@ -108,7 +110,7 @@ class APICalls {
       };
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('respose is here of client phone number ${respoce.data} ');
@@ -132,7 +134,7 @@ class APICalls {
       };
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
 
@@ -161,7 +163,7 @@ class APICalls {
       };
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
 
@@ -193,7 +195,7 @@ class APICalls {
       };
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
 
@@ -216,9 +218,10 @@ class APICalls {
   }
 
   static Future<bool> trackLocation(
-      String lat, String long, String job_id) async {
+      String lat, String long) async {
     officeName = await LocalDatabase.getString(LocalDatabase.USER_OFFICE);
     gard_id = await LocalDatabase.getString(LocalDatabase.GUARD_ID);
+    String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
     if (Platform.isAndroid) {
       deviceType = 'Android';
     } else if (Platform.isIOS) {
@@ -237,14 +240,14 @@ class APICalls {
       };
       final restClient = RestClient();
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
 
       print('location sent , response is here...  $respoce');
 
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
-        Helper.Toast('Tracking doing well', Constants.toast_grey);
+        //Helper.Toast('Tracking doing well', Constants.toast_grey);
         //save in local db
         return true;
       } else {
@@ -257,4 +260,40 @@ class APICalls {
       return false;
     }
   }
+
+
+  static Future<String> documentAPICall(BuildContext cntxt) async {
+    Helper.showLoading(cntxt);
+    try {
+      final parameters = {
+        'type': Constants.DRIVER_DOC_COUNT,
+        'office_name': officeName,
+        'guard_id': gard_id,
+      };
+      final restClient = RestClient();
+      final respoce = await restClient.get(Constants.BASE_URL + "", headers: {}, body: parameters);
+
+      print('document  , response is here...  $respoce');
+
+      if (respoce.data['RESULT'] == 'OK' ){
+        //Helper.Toast('${respoce.data['DATA'][0]['count']} Documents received', Constants.toast_grey);
+        //Navigator.of(cntxt).push( MaterialPageRoute(builder: (cntxt) =>  WebViewScreen(title: '${respoce.data['DATA']['count']} Documents received',url: respoce.data['DATA']['documents_link'])));
+        Navigator.pop(cntxt);
+        return respoce.data['DATA']['documents_link'];
+        //print('document  , response is here... count ${respoce.data['DATA']['count']}   url: ${respoce.data['DATA']['documents_link']}');
+      } else {
+        Helper.Toast('Can\'t get documents, please try again', Constants.toast_red);
+        Navigator.pop(cntxt);
+        return 'null';
+      }
+
+    } catch (e) {
+      Navigator.pop(cntxt);
+      print('documents exceptionsssss ${e.toString()}');
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      return 'null';
+    }
+  }
+
+
 }

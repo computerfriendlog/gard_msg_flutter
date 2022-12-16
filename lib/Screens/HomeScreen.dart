@@ -26,7 +26,9 @@ import '../Models/CheckPoint.dart';
 import '../Services/LocationService.dart';
 import '../main.dart';
 import 'AvailabilityScreen.dart';
-
+import 'HistoryScreen.dart';
+import 'WebViewScreen.dart';
+import 'package:zoom_widget/zoom_widget.dart';
 class HomeScreen extends StatefulWidget {
   static const routeName = '/HomeScreen';
 
@@ -46,6 +48,7 @@ String officeName = '';
 String gard_id = '';
 String password = '';
 String office_phone = '';
+String threat_level = '';
 
 class _HomeScreenState extends State<HomeScreen> {
   //bool availableForJob = true;
@@ -54,6 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int total_accepted_jobs = 0;
   int total__new_jobs = 0;
   int total_no_of_hours = 0;
+  Color? greyButtons = Colors.grey[200];
 
   //LocationService locationService=LocationService();
   @override
@@ -61,7 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // TODO: implement initState
     super.initState();
     loadInitailData();
-    checkHaveStartedJob();//then start tracking init
+    checkHaveStartedJob(); //then start tracking init
+    //round if from notification
+    rountNext();
   }
 
   @override
@@ -72,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var _hight = mediaQueryData.size.height;
     var _width = mediaQueryData.size.width;
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: SafeArea(
         child: Container(
             height: _hight,
@@ -82,10 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   //mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      height: _width * 0.13,
+                      height: _width * 0.15,
                       color: Theme.of(context).primaryColor,
-                      padding:
-                          const EdgeInsets.only(top: 4, bottom: 4, right: 5),
+                      //padding: const EdgeInsets.only(top: 4, bottom: 4, right: 5),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -141,55 +147,71 @@ class _HomeScreenState extends State<HomeScreen> {
                                 size: 30,
                                 color: Colors.white,
                               )),
-                          const Text(
-                            'Dashboard',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 23,
-                                fontWeight: FontWeight.w400),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              const Text(
+                                'Current threat level',
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w100),
+                              ),
+                              Text(
+                                threat_level,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                          LiteRollingSwitch(
-                            //initial value
-                            value:
-                                Provider.of<GuardStatus>(context, listen: true)
-                                    .getStatus(),
-                            //availableForJob
-                            textOn: 'Online',
-                            textOff: 'Offline',
-                            colorOn: Colors.greenAccent,
-                            colorOff: Colors.redAccent,
-                            iconOn: Icons.done,
-                            iconOff: Icons.double_arrow_rounded,
-                            textSize: 15.0,
-                            textOffColor: Colors.white,
-                            textOnColor: Colors.white,
-                            onChanged: (bool state) async {
-                              //Use it to manage the different states
-                              print('Current State of SWITCH IS: $state');
+                          SizedBox(
+                            width: _width * 0.25,
+                            height: _width * 0.1,
+                            child: LiteRollingSwitch(
+                              //initial value
+                              value: Provider.of<GuardStatus>(context,
+                                      listen: true)
+                                  .getStatus(),
+                              //availableForJob
+                              textOn: 'Online',
+                              textOff: 'Offline',
+                              colorOn: Colors.greenAccent,
+                              colorOff: Colors.redAccent,
+                              iconOn: Icons.done,
+                              iconOff: Icons.double_arrow_rounded,
+                              textSize: 14.0,
+                              textOffColor: Colors.white,
+                              textOnColor: Colors.white,
+                              onChanged: (bool state) async {
+                                //Use it to manage the different states
+                                print('Current State of SWITCH IS: $state');
 
-                              bool done = await APICalls.statusChange(
-                                  context, state ? "vacant" : "onbreak");
-                              print('Current strus.....: $done');
-                              if (done) {
-                                Provider.of<GuardStatus>(context)
-                                    .changeStatus(state);
-                              } else {
-                                Provider.of<GuardStatus>(context)
-                                    .changeStatus(!state);
-                              }
-                              setState(() {});
-                            },
+                                bool done = await APICalls.statusChange(
+                                    context, state ? "vacant" : "onbreak");
+                                print('Current strus.....: $done');
+                                if (done) {
+                                  Provider.of<GuardStatus>(context)
+                                      .changeStatus(state);
+                                } else {
+                                  Provider.of<GuardStatus>(context)
+                                      .changeStatus(!state);
+                                }
+                                setState(() {});
+                              },
 
-                            onTap: () async {
-                              //makeSelfOnline();
-                              //print('before State of SWITCH IS: ${await LocalDatabase.isAvailable()}');
-                            },
-                            onDoubleTap: () {
-                              //makeSelfOnline();
-                            },
-                            onSwipe: () {
-                              //makeSelfOnline();
-                            },
+                              onTap: () async {
+                                //makeSelfOnline();
+                                //print('before State of SWITCH IS: ${await LocalDatabase.isAvailable()}');
+                              },
+                              onDoubleTap: () {
+                                //makeSelfOnline();
+                              },
+                              onSwipe: () {
+                                //makeSelfOnline();
+                              },
+                            ),
                           ),
                         ],
                       ),
@@ -215,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Container(
                             decoration: BoxDecoration(
+                              color: greyButtons,
                               shape: BoxShape.rectangle,
                               border:
                                   Border.all(width: 0.5, color: Constants.grey),
@@ -232,7 +255,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     SizedBox(
                                       width: _width * 0.2,
                                       child: Card(
-                                        elevation: 5,
+                                        elevation: 0,
                                         color: Theme.of(context)
                                             .primaryColor
                                             .withOpacity(0.9),
@@ -287,36 +310,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ),
                                           ],
-                                        ),
+                                        ) ,
                                       ),
                                     ),
                                     Column(
                                       children: [
                                         Text(
-                                          '${total_accepted_jobs} Accepted',
+                                          'Accepted : $total_accepted_jobs ',
                                           style: const TextStyle(
-                                              fontWeight: FontWeight.w100,
-                                              fontSize: 16,
-                                              color: Colors.black),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                              color: Colors.green),
                                         ),
                                         const Divider(
                                           thickness: 1,
                                           color: Colors.grey,
                                         ),
                                         Text(
-                                          '${total__new_jobs} New',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.w100,
-                                              fontSize: 16,
-                                              color: Constants.grey
-                                                  .withOpacity(0.8)),
+                                          'New : $total__new_jobs ',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 20,
+                                              color: Colors.blueAccent
+                                              //Constants.grey.withOpacity(0.8)
+                                              ),
                                         ),
                                       ],
                                     ),
                                     SizedBox(
                                       width: _width * 0.2,
                                       child: Card(
-                                        elevation: 5,
+                                        elevation: 0,
                                         color: Theme.of(context)
                                             .primaryColor
                                             .withOpacity(0.9),
@@ -392,6 +416,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const EdgeInsets.only(top: 5, bottom: 5),
                                   width: _width * 0.19,
                                   decoration: BoxDecoration(
+                                    color: greyButtons,
                                     shape: BoxShape.rectangle,
                                     border: Border.all(
                                         width: 0.5, color: Constants.grey),
@@ -428,6 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   padding: const EdgeInsets.all(5),
                                   width: _width * 0.19,
                                   decoration: BoxDecoration(
+                                    color: greyButtons,
                                     shape: BoxShape.rectangle,
                                     border: Border.all(
                                         width: 0.5, color: Constants.grey),
@@ -485,7 +511,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ],
                                             );
                                           });
-                                      await Helper.determineCurrentPosition();
+
                                       if (via_system) {
                                         //update via system
                                         sendviaSystem();
@@ -501,6 +527,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   width: _width * 0.19,
                                   padding: const EdgeInsets.all(5),
                                   decoration: BoxDecoration(
+                                    color: greyButtons,
                                     shape: BoxShape.rectangle,
                                     border: Border.all(
                                         width: 0.5, color: Constants.grey),
@@ -580,22 +607,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               InkWell(
                                 onTap: () async {
-                                  /* Helper.Toast(
-                                      'schedule with notification for 5 min',
-                                      Colors.pink);
-                                  */ /*localNotificationService
-                                      .periodicallyNotification(
-                                          'title periodic...', 'pppp body');*/ /*
-                                  localNotificationService.scheduleNotification(
-                                      'test title 5',
-                                      'test body...',
-                                      Helper.getCurrentTime().add(Duration(minutes: 2)),
-                                      045);*/
-                                  Helper.Toast(
-                                      'Tracking started...', Colors.green);
-                                  ////
-                                  // 2.  Configure the plugin
-                                  //
+                                  Navigator.pushNamed(
+                                      context, HistoryScreen.routeName);
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -612,39 +625,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width_box: _width * 0.25,
                                     hight_box: _width * 0.3,
                                     lableText: 'Availability',
-                                    picture:
-                                        'assets/images/ic_availability.png'),
+                                    picture: 'assets/images/ic_availability.png'),
                               ),
                               InkWell(
                                 onTap: () async {
-                                  //int delay = 2;
-                                  // Helper.Toast(
-                                  //     'schedule with alarm for ${delay} min',
-                                  //     Colors.green);
-                                  // int helloAlarmID = 2;
-                                  // /*localNotificationService.scheduleNotification(
-                                  //     'Dear user Tap here ',
-                                  //     'To check your job point',
-                                  //     tempTimeOfCheckPoint.subtract(Duration(minutes: 15)),
-                                  //     int.parse(value['check_point_id']) );*/
-                                  //
-                                  // await AndroidAlarmManager.oneShotAt(
-                                  //     Helper.getCurrentTime()
-                                  //         .add(Duration(minutes: delay)),
-                                  //     helloAlarmID,
-                                  //     exact: true,
-                                  //     wakeup: true,
-                                  //     printHello);
-                                  //localNotificationService.scheduleNotification('title... schedule', 'its body',delay);
-                                  //Helper.Toast('tracking stopped', Colors.red);
-                                  Helper.Toast(
-                                      'location update stopped', Colors.red);
-                                  bg.BackgroundGeolocation.stop();
+                                  //Helper.stopTracking();
+                                  String link =
+                                      await APICalls.documentAPICall(context);
+                                  if (link != 'null') {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (context) => WebViewScreen(
+                                                title: 'Documents',
+                                                url: link)));
+                                  }
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
                                     hight_box: _width * 0.3,
-                                    lableText: 'stop loc', //Document
+                                    lableText: 'Document',
                                     picture: 'assets/images/ic_document.png'),
                               ),
                             ],
@@ -675,6 +674,7 @@ class _HomeScreenState extends State<HomeScreen> {
     gard_id = await LocalDatabase.getString(LocalDatabase.GUARD_ID);
     password = await LocalDatabase.getString(LocalDatabase.USER_PASSWORD);
     office_phone = await LocalDatabase.getString(LocalDatabase.USER_MOBILE);
+    threat_level = await LocalDatabase.getString(LocalDatabase.THREAT_LEVEL);
 
     if (Platform.isAndroid) {
       deviceType = 'Android';
@@ -704,10 +704,8 @@ class _HomeScreenState extends State<HomeScreen> {
         'password': password,
       };
 
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
       print(
           'dashboard responce is hereeee.         $respoce   mmmmmmmm  ${respoce.data['DATA'][0]}');
 
@@ -726,13 +724,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void sendviaSms() async {
+    await Helper.determineCurrentPosition();
     final parameters = {
       'type': Constants.RETURN_LINK,
       'office_name': officeName,
       'latitude': Helper.currentPositon.latitude,
       'longitude': Helper.currentPositon.longitude,
     };
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
+    final respoce = await restClient.get(Constants.BASE_URL + "",
         headers: {}, body: parameters);
 
     print('link retrun is here...  $respoce');
@@ -742,35 +741,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void sendviaSystem() async {
-    final parameters = {
-      'type': Constants.UPDATE_DRIVER_DOC,
-      'office_name': officeName,
-      'guard_id': gard_id,
-      'latitude': Helper.currentPositon.latitude.toString(),
-      'longitude': Helper.currentPositon.longitude.toString(),
-    };
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
-        headers: {}, body: parameters);
+    Helper.showLoading(context);
+    await Helper.determineCurrentPosition();
+    try {
+      final parameters = {
+        'type': Constants.UPDATE_DRIVER_DOC,
+        'office_name': officeName,
+        'guard_id': gard_id,
+        'latitude': Helper.currentPositon.latitude.toString(),
+        'longitude': Helper.currentPositon.longitude.toString(),
+      };
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
-    print('location update via system, respoce is here...  $respoce');
-    if (respoce.data['msg'] == 'Current Location Updated') {
-      showToast(
-        "Location updated",
-        duration: const Duration(seconds: 1),
-        position: ToastPosition.top,
-        backgroundColor: Colors.black.withOpacity(0.8),
-        radius: 3.0,
-        textStyle: const TextStyle(fontSize: 14.0),
-      );
-    } else {
-      showToast(
-        "Can\'t update Location, please try again",
-        duration: const Duration(seconds: 1),
-        position: ToastPosition.top,
-        backgroundColor: Colors.black.withOpacity(0.8),
-        radius: 3.0,
-        textStyle: const TextStyle(fontSize: 14.0),
-      );
+      print('location update via system, respoce is here...  $respoce');
+      if (respoce.data['msg'] == 'Current Location Updated') {
+        Helper.Toast('Location updated', Constants.toast_grey);
+      } else {
+        Helper.Toast(
+            'Can\'t update Location, please try again', Constants.toast_red);
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      Navigator.pop(context);
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
     }
   }
 
@@ -788,7 +782,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'latitude': Helper.currentPositon.latitude,
       'longitude': Helper.currentPositon.longitude,
     };
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
+    final respoce = await restClient.get(Constants.BASE_URL + "",
         headers: {}, body: parameters);
 
     print(
@@ -838,65 +832,20 @@ class _HomeScreenState extends State<HomeScreen> {
     if (id != 'null') {
       //have start job
       loadCheckCallsOfStartedJob(id);
-      checkJobAndTrack();
+      Helper.checkJobAndTrack();
     }
   }
 
-  void checkJobAndTrack() async {
-      bg.BackgroundGeolocation.onLocation((bg.Location location) {
-        print('[location sanwal] - ${location}');
-        print('[location sanwal] - ${location.coords.latitude}');
-        Helper.trackAndNotify(location.coords.latitude.toString(),
-            location.coords.longitude.toString());
-        //57440 start this job recently
-        //await LocalDatabase.saveString(LocalDatabase.STARTED_JOB, '57440');
-      });
-      // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
-      bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
-        print('[motionchange sanwal] - ${location}');
-      });
-      // Fired whenever the state of location-services changes.  Always fired at boot
-      bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
-        print('[providerchange sanwal] - ${event}');
-      });
-      bg.BackgroundGeolocation.ready(bg.Config(
-        notification: bg.Notification(
-          title: 'Teacking',
-          channelId: 'chnl',
-          channelName: 'abd',
-          sticky: true,
-          smallIcon: 'ic_notification',
-        ),
-        reset: true,
-        // <-- set true to ALWAYS apply supplied config; not just at first launch.
-        fastestLocationUpdateInterval: 5 * 1000,
-        //500  //it have to set 10 min
-        locationUpdateInterval: 15 * 1000,
-        //1000
-        //1000 is 1 sec
-        heartbeatInterval: 20 * 1000,
-        desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
-        distanceFilter: 0.01,
-        //0.001
-        stopOnTerminate: false,
-        forceReloadOnSchedule: true,
-        startOnBoot: true,
-        isMoving: true,
-        // very effectiv,
-        debug: true,
-        stopTimeout: 12 * 60,
-        logLevel: bg.Config.LOG_LEVEL_VERBOSE,
-        enableHeadless: true,
-        // foregroundService: true,
-        //   preventSuspend: true,
-      )).then((bg.State state) async {
-        print('location service started .....state is ${state}');
-        if (!state.enabled) {
-          bg.BackgroundGeolocation.start();
-          // Force moving state immediately.  Plugin will now begin recording a location each distanceFilter meters.
-          await bg.BackgroundGeolocation.changePace(true);
-        }
-      });
-
+  void rountNext() async{
+    String nextScreen = await LocalDatabase.getString(LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION);
+    print('nextscreen:  $nextScreen}');
+    if (nextScreen == Constants.NEXT_SCREEN_CURRENTJOBS) {
+      Navigator.of(context).pushNamed(CurrentJobs.routeName);
+    } else if (nextScreen == Constants.NEXT_SCREEN_MESSAGE) {
+      Navigator.of(context).pushNamed(MessageScreen.routeName);
+    } else {
+      //remain here...
+    }
+    LocalDatabase.saveString(LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION, Constants.NEXT_SCREEN_HOME);
   }
 }

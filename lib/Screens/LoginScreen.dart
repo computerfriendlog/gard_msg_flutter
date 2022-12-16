@@ -31,9 +31,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _controller_officeName.text = 'sms';
-    _controller_UserName.text = 'test';
-    _controller_Password.text = 'test';
+    //_controller_officeName.text = 'sms';
+    //_controller_UserName.text = 'test';
+    //_controller_Password.text = 'test';
   }
 
   @override
@@ -76,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Icon(
                             size: _width * 0.25,
-                            color: Colors.black.withOpacity(0.5),
+                            color: locked? Colors.black.withOpacity(0.5) : Colors.black,
                             locked
                                 ? Icons.lock_outlined
                                 : Icons.lock_open_outlined),
@@ -232,23 +232,26 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   loginUser() async {
+    Helper.showLoading(context);
+    String token=await LocalDatabase.getString(LocalDatabase.FIREBASE_MSG_TOKEN);
+    print('token: $token');
     final parameters = {
       'type': Constants.LOGIN_TYPE,
       'office_name': _controller_officeName.text.toString().trim(),
       'username': _controller_UserName.text.toString().trim(),
       'password': _controller_Password.text.toString().trim(),
       'device_type': "android",
-      'device_token': "testing"
+      'device_token': token
     };
 
-    final res = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+    final res = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     print(
         'login responce is hereeeeeeeeeeee.         $res   mmmmmmmm  ${res.data['status']}'); //statusCode
     if (res != null) {
       print('login response ,,,,,,,,,,,,,.         ${res.data['msg']}');
       if (res.data['msg'] == 'Login Success') {
-        //print('loginggggggee');
+
         setState(() {
           locked = false;
         });
@@ -268,8 +271,8 @@ class _LoginScreenState extends State<LoginScreen> {
             LocalDatabase.USER_MOBILE, res.data['DATA'][0]['office_no']);
         LocalDatabase.saveString(
             LocalDatabase.USER_OFFICE, _controller_officeName.text.toString());
-        LocalDatabase.saveString(
-            LocalDatabase.USER_PASSWORD, _controller_Password.text.toString());
+        LocalDatabase.saveString(LocalDatabase.USER_PASSWORD, _controller_Password.text.toString());
+        LocalDatabase.saveString(LocalDatabase.THREAT_LEVEL,  res.data['DATA'][0]['threat_lvl']);
         LocalDatabase.setLogined(true);
         showToast(
           'Login successful',
@@ -279,9 +282,10 @@ class _LoginScreenState extends State<LoginScreen> {
           radius: 3.0,
           textStyle: const TextStyle(fontSize: 14.0),
         );
-
+        Navigator.pop(context);
         Navigator.pushNamed(context, HomeScreen.routeName);
       } else {
+        Navigator.pop(context);
         showToast(
           'Login failed',
           duration: const Duration(seconds: 1),
@@ -292,6 +296,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } else {
+      Navigator.pop(context);
       showToast(
         Constants.somethingwentwrong,
         duration: const Duration(seconds: 1),

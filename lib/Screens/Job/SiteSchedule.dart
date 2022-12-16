@@ -4,6 +4,7 @@ import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:camera/camera.dart';
 import 'package:gard_msg_flutter/Screens/Camera/TakePictureScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/FinishJobScreen.dart';
+import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
@@ -44,16 +45,17 @@ class _SiteScheduleState extends State<SiteSchedule> {
                   color: Colors.white),
             ),
           ),
-          body: Container(
-            height: _hight * 0.95,
-            padding: const EdgeInsets.all(10),
-            child: ListView(
-              children: [
-                Column(
+          body: ListView(
+            children: [
+              Container(
+                height: _hight * 0.87,
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     SizedBox(
-                      height: _hight * 0.5,
+                      height: _hight * 0.6,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
@@ -64,14 +66,14 @@ class _SiteScheduleState extends State<SiteSchedule> {
                                 this_job!.job_date.toString(),
                                 style: TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 18,
+                                    fontSize: 20,
                                     color: Theme.of(context).primaryColor),
                               ),
                               Text(
                                 this_job!.job_id.toString(),
                                 style: const TextStyle(
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                    fontSize: 16,
                                     color: Colors.black),
                               ),
                             ],
@@ -79,22 +81,22 @@ class _SiteScheduleState extends State<SiteSchedule> {
                           Text(
                             'Start : ${this_job!.start_time.toString()}',
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
                                 color: Colors.black),
                           ),
                           Text(
                             'End : ${this_job!.end_time.toString()}',
                             style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 20,
                                 color: Colors.black),
                           ),
                           Text(
                             '${this_job!.end_time.toString()} Hours',
                             style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 16,
+                                fontSize: 20,
                                 color: Colors.black.withOpacity(0.7)),
                           ),
                           Container(
@@ -186,15 +188,21 @@ class _SiteScheduleState extends State<SiteSchedule> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                    CustomButton('Start Job', _width * 0.8, () {
+                      Helper.showLoading(context);
+                      checkAvailability();
+
+                      ///for testing only
+                      //startJob('on time, not late', 0);
+                    }),
+                    /* SizedBox(
                       width: _width * 0.8,
                       child: ElevatedButton(
                           onPressed: () {
                             Helper.showLoading(context);
-                            //checkAvailability();
-
+                            checkAvailability();
                             ///for testing only
-                            startJob('on time, not late', 0);
+                            //startJob('on time, not late', 0);
                           },
                           child: const Text(
                             'Start Job',
@@ -203,19 +211,18 @@ class _SiteScheduleState extends State<SiteSchedule> {
                                 fontSize: 20,
                                 color: Colors.white),
                           )),
-                    ),
+                    ),*/
                   ],
                 ),
-              ],
-            ),
+              ),
+            ],
           )),
     );
   }
 
   void startJob(String reason, double total_miles) async {
     print('starting job here');
-    print(
-        'location while starting is ${Helper.currentPositon.latitude.toString()}     ${Helper.currentPositon.longitude.toString()}');
+    print('location while starting is ${Helper.currentPositon.latitude.toString()}     ${Helper.currentPositon.longitude.toString()}');
     final parameters = {
       'type': Constants.START_PATROL,
       'office_name': officeName,
@@ -227,7 +234,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
       'total_miles': total_miles,
     };
 
-    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+    final respose = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     Navigator.pop(context); //for loader
     //Navigator.of(context, rootNavigator: true).pop(false);
@@ -236,6 +243,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
       LocalDatabase.saveString(
           LocalDatabase.STARTED_JOB, this_job!.job_id.toString());
       Helper.Toast('Your shift started successfully', Constants.toast_grey);
+      Helper.checkJobAndTrack();
       Navigator.of(context)
           .pushNamed(FinishJobScreen.routeName, arguments: this_job!);
     } else {
@@ -273,7 +281,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
       'longitude': Helper.currentPositon.longitude.toString(),
     };
 
-    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+    final respose = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     print('response of checking radius is here  $respose  ');
     /*double jb_lt;
@@ -508,9 +516,11 @@ class _SiteScheduleState extends State<SiteSchedule> {
         if (LocalDatabase.getString(LocalDatabase.STARTED_JOB) == 'null') {
           startJob('on time, not late', 0);
         } else {
+          Navigator.pop(context);
           Helper.Toast('Once complete your first job', Constants.toast_grey);
         }
-      } else if (respose.data['status'] == 2) {
+      }
+      else if (respose.data['status'] == 2) {
         ///start job with image and reason, fare from location
         TextEditingController _controller_reason_of_late =
             TextEditingController();
@@ -620,10 +630,21 @@ class _SiteScheduleState extends State<SiteSchedule> {
         showDialog(
             context: context,
             builder: (BuildContext context) => rejectDialog_with_reason);
-      } else if (respose.data['status'] == 3) {
+      }
+      else if (respose.data['status'] == 3) {
         Navigator.pop(context);
-        Helper.msgDialog(context, _hight * 0.3,
-            'I\'m afraid we cannot start your shift, Kindly call office to get shift started');
+        Helper.msgDialog(context,
+            'I\'m afraid we cannot start your shift, Kindly call office to get shift started',
+            () {
+          Navigator.pop(context);
+        });
+      }
+      else if (respose.data['status'] == 4) {
+        Navigator.pop(context);
+        Helper.msgDialog(context, 'I can\'t start job due to time difference, Please ask your office to start it.',
+            () {
+          Navigator.pop(context);
+        });
       }
     } else {
       Helper.Toast(Constants.somethingwentwrong, Constants.toast_grey);

@@ -536,8 +536,11 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
                     if (remainingTime == Constants.COMPLATED) {
                       finishJob();
                     } else {
-                      Helper.msgDialog(context, hight * 0.3,
-                          'Finish your job on time, Or ask your office to mark completed.');
+                      Helper.msgDialog(context,
+                          'Finish your job on time, Or ask your office to mark completed.',
+                          () {
+                        Navigator.pop(context);
+                      });
                     }
                   },
                   child: Padding(
@@ -573,10 +576,8 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
         'latitude': Helper.currentPositon.latitude.toString(),
         'longitude': Helper.currentPositon.latitude.toString(),
       };
-      final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('response is here of location update  ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
@@ -596,7 +597,7 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
     Helper.showLoading(context);
     await Helper.determineCurrentPosition();
     String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
-
+    print('finish job ->${job_id}');
     try {
       final parameters = {
         'type': Constants.END_PATROL,
@@ -606,16 +607,15 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
         'latitude': Helper.currentPositon.latitude.toString(),
         'longitude': Helper.currentPositon.latitude.toString(),
       };
-      final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('response is here of job finishing  ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
         LocalDatabase.saveString(LocalDatabase.STARTED_JOB, "null");
         Navigator.pop(context);
         Navigator.pushNamed(context, HomeScreen.routeName);
+        Helper.stopTracking();
         Helper.Toast('Job finished successfully', Constants.toast_grey);
       } else {
         Navigator.pop(context);
@@ -656,14 +656,22 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
     nfc_available = await FlutterNfcReader.checkNFCAvailability();
     print(
         'nfc click   ${nfc_available.toString()}    ${nfc_available!.index.toString()}');
-    if (nfc_available!.index.toString() == 'NFCAvailability.not_supported') {
+    Helper.msgDialog(context,
+        'NFC info \n  ${nfc_available.toString()}  ${nfc_available!.index.toString()}',
+        () {
+      Navigator.pop(context);
+    });
+    if (nfc_available!.index.toString() == '0') {
+      //NFCAvailability.not_supported
       // nfc number
       FlutterNfcReader.read(instruction: "It's reading").then((value) => {
-            print('after reading...   ${value} '),
-            //Helper.Toast('after reading   ${value}', Constants.toast_grey),
-            Helper.msgDialog(context, hight * 0.5,
-                'received info from nfc \n  ${value.toString()}'),
-            nfcAPICall(value.toString()),
+            //print('after reading...   ${value} '),
+            Helper.Toast('after reading   ${value}', Constants.toast_grey),
+             Helper.msgDialog(
+                 context, 'received info from nfc \n id: ${value.id} .\n status: ${value.status} .\n content: ${value.content}  \nstatusMapper: ${value.statusMapper}  \n${value.error}', () {
+               Navigator.pop(context);
+             }),
+            nfcAPICall(value.content.toString()),
           });
     } else {
       Helper.Toast('NFC not supported', Constants.toast_grey);
@@ -672,22 +680,29 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
 
   void nfcAPICall(String nfc_number) async {
     await Helper.determineCurrentPosition();
-    final parameters = {
-      'type': Constants.SAVE_NFC_RECORD,
-      'office_name': officeName,
-      'job_id': job!.job_id,
-      'nfc_number': nfc_number,
-      'latitude': Helper.currentPositon.latitude.toString(),
-      'longitude': Helper.currentPositon.longitude.toString(),
-    };
-    final respoce = await restClient.post(Constants.BASE_URL + "guardappv4.php",
-        headers: {}, body: parameters);
+    try {
+      final parameters = {
+        'type': Constants.SAVE_NFC_RECORD,
+        'office_name': officeName,
+        'job_id': job!.job_id,
+        'nfc_number': nfc_number,
+        'latitude': Helper.currentPositon.latitude.toString(),
+        'longitude': Helper.currentPositon.longitude.toString(),
+      };
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
-    print('response is here of nfc api  ${respoce.data} ');
-    if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
-      Helper.Toast('NFC updated', Constants.toast_grey);
-    } else {
-      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      print('response is here of nfc api  ${respoce.data} ');
+      if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
+
+        Helper.Toast('NFC updated', Constants.toast_grey);
+      } else {
+        Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+      }
+      Navigator.pop(context);
+    } catch (e) {
+      Helper.Toast('NFC exception: ${e.toString()}', Constants.toast_red);
+      Navigator.pop(context);
     }
   }
 }

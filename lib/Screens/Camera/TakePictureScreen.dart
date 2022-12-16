@@ -213,7 +213,7 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       'start_patrol_image': formData //img_file.readAsBytesSync()
     };
 
-    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+    final respose = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     Navigator.pop(context);
     print('start with image respose is here${respose.data['msg']}');

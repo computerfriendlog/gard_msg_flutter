@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/APIs/APICalls.dart';
 import 'package:gard_msg_flutter/Helper/Constants.dart';
@@ -8,6 +10,7 @@ import 'package:gard_msg_flutter/Widgets/SmsRowDesign.dart';
 import '../APIs/RestClient.dart';
 import '../Helper/Helper.dart';
 import '../Models/Message.dart';
+import 'package:provider/provider.dart';
 import '../Widgets/JobsDesign.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -20,20 +23,43 @@ class MessageScreen extends StatefulWidget {
 }
 
 class _MessageScreenState extends State<MessageScreen> {
+  // working on stream
+  final streamProvider=StreamProvider<int>(
+      initialData: 0,
+      create: ((ref){
+return Stream.periodic(Duration(seconds: 15),((computation)=>computation));
+  }));
   final restClient = RestClient();
-  bool isLoding = true;
+  //bool isLoding = true;
   List<Message> msg_list = [];
   TextEditingController _controller_msg =TextEditingController();
-
+  StreamController<Message> streamController_message = StreamController();
+  bool firstTimeOpenScreen = true;
+  Timer? _timer;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    loadSms();
+    //loadSms();
+  }
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    streamController_message.close();
+    if (_timer != null) {
+      _timer!.cancel();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (firstTimeOpenScreen) {
+      print('curret screen build.....running////');
+      _timer = Timer.periodic(const Duration(seconds: 5), (Timer t) {
+        loadSms();
+      });
+    }
     MediaQueryData mediaQueryData = MediaQuery.of(context);
     var hight = mediaQueryData.size.height;
     var width = mediaQueryData.size.width;
@@ -84,20 +110,30 @@ class _MessageScreenState extends State<MessageScreen> {
         child: Column(
           children: [
             Expanded(
-              child: !isLoding
-                  ? ListView.builder(
-                      scrollDirection: Axis.vertical,
-                      shrinkWrap: true,
-                      reverse: true,
-                      itemCount: msg_list.length,
-                      physics: const ScrollPhysics(),
-                      itemBuilder: (ctx, index) {
-                        return SmsRowDesign(
-                          message: msg_list[index],
-                        );
-                      },
-                    )
-                  : Helper.LoadingWidget(context),
+              child: //!isLoding ?
+              StreamBuilder<Message>(
+                            stream: streamController_message.stream,
+                            builder: (context, newJob) {
+                              if (newJob.hasData) {
+                                return ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  reverse: true,
+                                  itemCount: msg_list.length,
+                                  physics: const ScrollPhysics(),
+                                  itemBuilder: (ctx, index) {
+                                    return SmsRowDesign(
+                                      message: msg_list[index],
+                                    );
+                                  },
+                                );
+                              } else {
+                                return Helper.LoadingWidget(context);
+                              }
+                            },
+                          )
+
+                  //: Helper.LoadingWidget(context),
             ),
             Column(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -134,11 +170,10 @@ class _MessageScreenState extends State<MessageScreen> {
                           if( _controller_msg.text.trim().isNotEmpty){
                             await APICalls.sendSmsViaApp(context, _controller_msg.text.trim());
                             _controller_msg.text='';
-                            loadSms();
-                          }else{
+                            //loadSms();
+                          } else {
                             Helper.Toast('Enter text', Constants.toast_grey);
                           }
-
                         }, child: const Icon(Icons.send_rounded,color: Colors.black,size: 30,)))
                   ],
                 ),
@@ -159,13 +194,14 @@ class _MessageScreenState extends State<MessageScreen> {
       'device_type': deviceType
     };
 
-    final respose = await restClient.post(Constants.BASE_URL + "guardappv4.php",
+    final respose = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     print('sms list response is here     ${respose.data}');
     msg_list.clear();
     if (respose.data['RESULT'] == 'OK') {
+      Message message;
       respose.data['DATA'].forEach((value) {
-        msg_list.add(Message(
+        message=Message(
             job_id: value['job_id'],
             id: value['id'],
             attachment: value['attachment'],
@@ -181,10 +217,15 @@ class _MessageScreenState extends State<MessageScreen> {
             to_user_id: value['to_user_id'],
             type: value['type'],
             viewed: value['viewed'],
-            voice_msg_file: value['voice_msg_file']));
+            voice_msg_file: value['voice_msg_file']);
+        msg_list.add(message);
+        streamController_message.sink.add(message);
       });
-      isLoding = false;
-      setState(() {});
+      //isLoding = false;
+      if(firstTimeOpenScreen){
+        firstTimeOpenScreen=false;
+        setState(() {});
+      }
     }
 
     //Navigator.pop(context);

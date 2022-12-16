@@ -59,8 +59,8 @@ class TakePictureInArrayState extends State<TakePictureInArray> {
   @override
   void dispose() {
     // Dispose of the controller when the widget is disposed.
-    _controller.dispose();
     super.dispose();
+    _controller.dispose();
   }
 
   @override

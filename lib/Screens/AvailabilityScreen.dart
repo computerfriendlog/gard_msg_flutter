@@ -210,7 +210,7 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
       };
 
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print(
@@ -254,7 +254,7 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
       };
 
       final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print(
@@ -282,21 +282,13 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
     DateTime startDate = Helper.getCurrentTime();
     DateTime endDate = Helper.getCurrentTime();
     // date selector
-    final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: Helper.getCurrentTime(),
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
+    final DateTime picked = await Helper.selectDate(context);
     if (picked != null) {
       startDate = picked;
       print('date selected start ${startDate}');
     }
 
-    final DateTime? picked2 = await showDatePicker(
-        context: context,
-        initialDate: Helper.getCurrentTime(),
-        firstDate: DateTime(2015, 8),
-        lastDate: DateTime(2101));
+    final DateTime picked2 = await Helper.selectDate(context);
     if (picked2 != null) {
       endDate = picked2;
       print('date selected end ${endDate}');
@@ -675,10 +667,10 @@ class _AvailabilityScreenState extends State<AvailabilityScreen> {
       };
 
       final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
-      print('set off on spacific date and time responce is hereeee.         $respoce   khankkk  ${respoce.data['DATA']}');
+      print('set off on specific date and time responce is hereeee.         $respoce   khankkk  ${respoce.data['DATA']}');
 
       if (respoce.data['RESULT'] == 'OK' && respoce.data['STATUS'] == 1) {
         Helper.Toast('Request sent', Constants.toast_grey);

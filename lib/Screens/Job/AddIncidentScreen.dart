@@ -243,7 +243,7 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
         'office_name': officeName,
       };
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('respose is here of check incidents list  ${respoce.data} ');
@@ -304,7 +304,7 @@ class _AddIncidentScreenState extends State<AddIncidentScreen> {
         'sign_img': singatureImageInBytes,
       };
       final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('response is here of check incidents list  ${respoce.data} ');

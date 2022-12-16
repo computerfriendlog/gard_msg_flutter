@@ -3,11 +3,12 @@ import 'package:flutter/material.dart';
 
 class Constants {
   ///Strings
-  static String BASE_URL =
-      'https://guardapps.tbmslive.com/taxi_app/WebServices/';
+  ///static String BASE_URL = 'https://guardapps.tbmslive.com/taxi_app/WebServices/';
+  static String BASE_URL = 'https://guardapps.tbmslive.com/taxi_app/WebServices/guardappv5.php';
   static String noInternetConnection = 'Check your internet connection';
   static String COMPLATED = "completed";
   static String DRIVER_STATUS_CHANGE = "driver_status_change";
+  static String DRIVER_DOC_COUNT = "driver_docs_count";
   static String DRIVER_LOCATION_CHANGE = "save_driver_location";
   static String LOGIN_TYPE = "guard_login";
   static String DASHBOARD_TYPE = "dashboard";
@@ -21,6 +22,7 @@ class Constants {
   static String DRIVER_LOGOUT = "driver_logout";
   static String END_PATROL = "end_patroling";
   static String PATROL_LISTING = "patrol_schedule_listing";
+  static String JOBS_HISTORY = "history_jobs";
   static String TYPE_NEW_JOBS = "new_job";
   static String REJECT_GUARD = "guard_reject_job";
   static String START_PATROL = "start_patroling";
@@ -45,6 +47,10 @@ class Constants {
   static String SEND_ACK = "acknowledge_check_points";
   static String LOCATION_TRACK_TYPE_NORMAL = "normal";
   static String somethingwentwrong = "Something went wrong";
+  static String NEXT_SCREEN_MESSAGE = "msg";
+  static String NEXT_SCREEN_CURRENTJOBS = "jobs";
+  static String NEXT_SCREEN_HOME = "home";
+
 
   ///icons
   static IconData ic_calender = Icons.calendar_month_outlined;

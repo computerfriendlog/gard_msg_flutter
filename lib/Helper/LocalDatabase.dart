@@ -11,11 +11,14 @@ class LocalDatabase {
   static String NAME = "guardName_key";
   static String USER_NAME = "username_key";
   static String USER_PASSWORD = "userpassword_key";
+  static String THREAT_LEVEL = "threat_level";
   static String USER_EMAIL = "guardEmail_key";
   static String USER_ADDRESS = "guardAddress_key";
   static String USER_MOBILE = "guard_mobile_key";
   static String USER_OFFICE = "guard_office_key";
   static String STARTED_JOB = "started_job_key";
+  static String SCREEN_OPEN_ON_NOTIFICATION = "screen_on_notify";
+  static String FIREBASE_MSG_TOKEN = "push_notification_token";
 
   static Future setLogined(bool logined) async {
     try {

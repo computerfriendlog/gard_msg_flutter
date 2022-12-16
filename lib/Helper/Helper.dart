@@ -102,7 +102,7 @@ class Helper {
     }
     print('5.......');
     try{
-      currentPositon = await Geolocator.getCurrentPosition(timeLimit: Duration(seconds: 10));
+      currentPositon = await Geolocator.getCurrentPosition(timeLimit: Duration(seconds: 6));
     }catch(e){
       print('6.......');
     }
@@ -134,6 +134,7 @@ class Helper {
     AlertDialog alert = AlertDialog(
       backgroundColor: Colors.transparent,
       content: Row(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           LoadingAnimationWidget.inkDrop(
@@ -172,14 +173,14 @@ class Helper {
     return DateTime.now();
   }
 
-  static void msgDialog(BuildContext context, double _hight, String msg) {
+  static void msgDialog(BuildContext context, String msg,Function()? _function_handler) {
     Dialog rejectDialog_with_reason = Dialog(
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
         child: Container(
-          height: _hight,
           padding: const EdgeInsets.all(20),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Row(
@@ -205,9 +206,7 @@ class Helper {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: _function_handler,
                       child: const Text(
                         'OK',
                         style: TextStyle(
@@ -236,12 +235,85 @@ class Helper {
     return selectedTime;
   }
 
+  static Future<DateTime> selectDate(BuildContext context) async {
+    DateTime selectedTime = DateTime.now();
+    final DateTime? picked_s = await showDatePicker(
+        context: context,
+        initialDate: Helper.getCurrentTime(),
+        firstDate: DateTime(2015, 8),
+        lastDate: DateTime(2101));
+    if (picked_s != null) selectedTime = picked_s;
+    return selectedTime;
+  }
+
   static trackAndNotify(String lat,String long){
-    LocalNotificationService localNotification = LocalNotificationService();
-    localNotification.initializNotifications();
-    localNotification.sendNotification('Now you are here ',
-        "${lat},${long}");
+    // LocalNotificationService localNotification = LocalNotificationService();
+    // localNotification.initializNotifications();
+    // localNotification.sendNotification('Now you are here ', "${lat},${long}");
     APICalls.trackLocation(lat,
-        long, '57440');
+        long);
+  }
+
+  static checkJobAndTrack() async {
+    bg.BackgroundGeolocation.onLocation((bg.Location location) {
+      print('[location sanwal] - ${location}');
+      print('[location sanwal] - ${location.coords.latitude}');
+      Helper.trackAndNotify(location.coords.latitude.toString(),
+          location.coords.longitude.toString());
+    });
+    // Fired whenever the plugin changes motion-state (stationary->moving and vice-versa)
+    bg.BackgroundGeolocation.onMotionChange((bg.Location location) {
+      print('[motionchange sanwal] - ${location}');
+      Helper.trackAndNotify(location.coords.latitude.toString(),
+          location.coords.longitude.toString());
+    });
+    // Fired whenever the state of location-services changes.  Always fired at boot
+    bg.BackgroundGeolocation.onProviderChange((bg.ProviderChangeEvent event) {
+      print('[providerchange sanwal] - ${event}');
+    });
+    bg.BackgroundGeolocation.ready(bg.Config(
+      notification: bg.Notification(
+        title: 'SMS Guard portal',
+        channelId: 'chnl',
+        channelName: 'abd',
+        sticky: true,
+        text: 'Tracking location',
+        smallIcon: 'ic_notification',
+      ),
+      reset: true,
+      // <-- set true to ALWAYS apply supplied config; not just at first launch.
+      fastestLocationUpdateInterval: 10 * 1000,
+      //500  //it have to set 10 min
+      locationUpdateInterval: 10 * 1000,
+      //1000
+      //1000 is 1 sec
+      heartbeatInterval: 20 * 1000,
+      desiredAccuracy: bg.Config.DESIRED_ACCURACY_HIGH,
+      distanceFilter: 0.01,
+      //0.001
+      stopOnTerminate: false,
+      forceReloadOnSchedule: true,
+      startOnBoot: true,
+      isMoving: true,
+      // very effectiv,
+      debug: true,
+      stopTimeout: 12 * 60,
+      logLevel: bg.Config.LOG_LEVEL_VERBOSE,
+      enableHeadless: true,
+      // foregroundService: true,
+      //   preventSuspend: true,
+    )).then((bg.State state) async {
+      print('location service started .....state is ${state}');
+      if (!state.enabled) {
+        bg.BackgroundGeolocation.start();
+        // Force moving state immediately.  Plugin will now begin recording a location each distanceFilter meters.
+        await bg.BackgroundGeolocation.changePace(true);
+      }
+    });
+
+  }
+
+  static stopTracking() {
+    bg.BackgroundGeolocation.stop();
   }
 }

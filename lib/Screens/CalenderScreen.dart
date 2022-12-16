@@ -24,6 +24,15 @@ class _CalenderScreenState extends State<CalenderScreen> {
     var hight = mediaQueryData!.size.height;
     var width = mediaQueryData!.size.width;
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Calender',
+          style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 25,
+              color: Colors.white),
+        ),
+      ),
       body: SafeArea(
         child: Container(
           width: width,
@@ -37,7 +46,7 @@ class _CalenderScreenState extends State<CalenderScreen> {
               ],),
               HorizontalCalendar( DateTime.now(),
                   width: width*.8,
-                  height: 250,
+                  height: 200,
                   selectionColor: Colors.red,
                   itemController: itemController,
 

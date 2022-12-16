@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "829276692771",
+    "project_id": "sms-guard-patrol",
+    "storage_bucket": "sms-guard-patrol.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829276692771:android:cccaf036d4cb6f7262ac96",
+        "android_client_info": {
+          "package_name": "com.gard.sms.fltr.gard_msg_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829276692771-qe5dqjknpsbol8mk38fncjsndld0t237.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDh-rzhA9-U_RVUK3iDkr_ETwoEYWKWdiA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "829276692771-qe5dqjknpsbol8mk38fncjsndld0t237.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "829276692771-1ufc12882816ifpouv2kt37b5e33k6pk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cfits.guardsms"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:829276692771:android:dcf4d5c5a457842c62ac96",
+        "android_client_info": {
+          "package_name": "com.sms.guard.patrol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "829276692771-qe5dqjknpsbol8mk38fncjsndld0t237.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDh-rzhA9-U_RVUK3iDkr_ETwoEYWKWdiA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "829276692771-qe5dqjknpsbol8mk38fncjsndld0t237.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "829276692771-1ufc12882816ifpouv2kt37b5e33k6pk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cfits.guardsms"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

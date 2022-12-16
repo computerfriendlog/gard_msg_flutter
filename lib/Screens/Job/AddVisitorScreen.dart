@@ -260,7 +260,7 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
         'image_name': formData_list,
       };
       final respoce = await restClient.post(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
 

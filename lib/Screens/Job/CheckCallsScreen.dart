@@ -218,7 +218,6 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                 function_handle: () {
                                   //doing here
                                   DateTime tempDate = DateFormat("dd-MM-yyyy hh:m:ss").parse(chkPoint_list[index].time!.toString());
-
                                   //print('time is ${chkPoint_list[index].time}       ${tempDate.toString()}        ');
                                   //print('difference in minuts   ${Helper.getCurrentTime().difference(tempDate).inMinutes}   ${tempDate.difference(Helper.getCurrentTime()).inMinutes}');
                                   if (chkPoint_list[index].status == '0') {
@@ -415,7 +414,7 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
       'latitude': Helper.currentPositon.latitude,
       'longitude': Helper.currentPositon.longitude,
     };
-    final respoce = await restClient.get(Constants.BASE_URL + "guardappv4.php",
+    final respoce = await restClient.get(Constants.BASE_URL + "",
         headers: {}, body: parameters);
 
     print('respose is here of check calls ${respoce.data} ');
@@ -434,7 +433,7 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
     }
     isLoading = false;
     setState(() {});
-    print('check point 1 is   ${chkPoint_list[0].job_id}');
+    //print('check point 1 is   ${chkPoint_list[0].job_id}');
   }
 
   void sendSimpleCheckPoint() async {
@@ -451,7 +450,7 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
 
     try {
       final respoce = await restClient.get(
-          Constants.BASE_URL + "guardappv4.php",
+          Constants.BASE_URL + "",
           headers: {},
           body: parameters);
       print('respose is here send check without  calls ${respoce.data} ');
