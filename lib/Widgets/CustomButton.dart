@@ -6,8 +6,7 @@ class CustomButton extends StatelessWidget {
   final double width;
   Color? background;
 
-  CustomButton(this.lable, this.width, this._function_handler,
-      {this.background});
+  CustomButton(this.lable, this.width, this._function_handler, {this.background});
 
   @override
   Widget build(BuildContext context) {

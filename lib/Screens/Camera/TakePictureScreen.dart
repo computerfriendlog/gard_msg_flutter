@@ -120,6 +120,8 @@ class TakePictureScreenState extends State<TakePictureScreen> {
                                     Navigator.pop(context);
                                     setState(() {});
                                   } catch (e) {
+                                    Navigator.pop(context);
+                                    Helper.msgDialog(context, 'camera error: ${e.toString()}', () {});
                                     Helper.Toast(Constants.somethingwentwrong,
                                         Constants.toast_red);
                                     print(e);

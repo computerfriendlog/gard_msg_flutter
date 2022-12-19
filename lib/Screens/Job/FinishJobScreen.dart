@@ -656,11 +656,9 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
     nfc_available = await FlutterNfcReader.checkNFCAvailability();
     print(
         'nfc click   ${nfc_available.toString()}    ${nfc_available!.index.toString()}');
-    Helper.msgDialog(context,
-        'NFC info \n  ${nfc_available.toString()}  ${nfc_available!.index.toString()}',
-        () {
-      Navigator.pop(context);
-    });
+    //Helper.msgDialog(context, 'NFC info \n  ${nfc_available.toString()}  ${nfc_available!.index.toString()}', () {
+      //Navigator.pop(context);
+   // });
     if (nfc_available!.index.toString() == '0') {
       //NFCAvailability.not_supported
       // nfc number
@@ -668,7 +666,8 @@ class _FinishJobScreenState extends State<FinishJobScreen> {
             //print('after reading...   ${value} '),
             Helper.Toast('after reading   ${value}', Constants.toast_grey),
              Helper.msgDialog(
-                 context, 'received info from nfc \n id: ${value.id} .\n status: ${value.status} .\n content: ${value.content}  \nstatusMapper: ${value.statusMapper}  \n${value.error}', () {
+                 context, 'NFC scanned\n Thanks', () {
+                 //context, 'received info from nfc \n id: ${value.id} .\n status: ${value.status} .\n content: ${value.content}  \nstatusMapper: ${value.statusMapper}  \n${value.error}', () {
                Navigator.pop(context);
              }),
             nfcAPICall(value.content.toString()),

@@ -191,7 +191,6 @@ class _SiteScheduleState extends State<SiteSchedule> {
                     CustomButton('Start Job', _width * 0.8, () {
                       Helper.showLoading(context);
                       checkAvailability();
-
                       ///for testing only
                       //startJob('on time, not late', 0);
                     }),
@@ -509,29 +508,29 @@ class _SiteScheduleState extends State<SiteSchedule> {
     }*/
 
     if (respose.data['RESULT'] == 'OK') {
-      if (respose.data['status'] == 0) {
-        Helper.Toast("errors related to job_id, guard_id , site name",
+      if (respose.data['status'] == 0) {//
+        Helper.Toast("Errors related to job_id, guard_id , site name",
             Constants.toast_grey);
-      } else if (respose.data['status'] == 1) {
+      } else if (respose.data['status'] == 1) {//
         if (LocalDatabase.getString(LocalDatabase.STARTED_JOB) == 'null') {
           startJob('on time, not late', 0);
         } else {
           Navigator.pop(context);
           Helper.Toast('Once complete your first job', Constants.toast_grey);
         }
-      }
-      else if (respose.data['status'] == 2) {
+      }//
+      else if (respose.data['status'] == 2) {//
         ///start job with image and reason, fare from location
         TextEditingController _controller_reason_of_late =
-            TextEditingController();
-        Dialog rejectDialog_with_reason = Dialog(
-          shape:
+        TextEditingController();
+        Dialog rejectDialog_with_reason = Dialog(shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           //this right here
           child: SizedBox(
-            height: _hight * 0.5,
-            width: _width * 0.7,
+            //height: _hight * 0.5,
+            width: _width * 0.9,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Container(
@@ -558,77 +557,57 @@ class _SiteScheduleState extends State<SiteSchedule> {
                 const SizedBox(
                   height: 20,
                 ),
-                Container(
-                  padding: const EdgeInsets.only(
-                      top: 10, bottom: 5, right: 10, left: 10),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.only(
-                                top: 20, bottom: 20, right: 10, left: 10),
-                            child: CustomTextField(_width * 0.6, '', 'Reason',
-                                TextInputType.name, _controller_reason_of_late),
-                          )
-                        ],
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                              onPressed: () {
-                                if (_controller_reason_of_late.text.isEmpty) {
-                                  Helper.Toast('Invalid reason', Colors.grey);
-                                } else {
-                                  clickImageByCamera(0,
-                                      _controller_reason_of_late.text.trim());
-                                }
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Submit',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w100),
-                                ),
-                              )),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context, rootNavigator: true)
-                                  .pop(false);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey[300],
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(8.0),
-                              child: Text(
-                                'Cancel',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w100),
-                              ),
-                            ),
+                Helper.reasonTextField(_controller_reason_of_late),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                        onPressed: () {
+                          if (_controller_reason_of_late.text.isEmpty) {
+                            Helper.Toast('Invalid reason', Colors.grey);
+                          } else {
+                            clickImageByCamera(0,
+                                _controller_reason_of_late.text.trim());
+                          }
+                        },
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Submit',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w100),
                           ),
-                        ],
-                      )
-                    ],
-                  ),
+                        )),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context, rootNavigator: true)
+                            .pop(false);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey[300],
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w100),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 10,),
               ],
             ),
           ),
         );
-        showDialog(
-            context: context,
+        showDialog(context: context,
             builder: (BuildContext context) => rejectDialog_with_reason);
       }
       else if (respose.data['status'] == 3) {

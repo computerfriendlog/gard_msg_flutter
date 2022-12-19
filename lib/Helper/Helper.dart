@@ -316,4 +316,33 @@ class Helper {
   static stopTracking() {
     bg.BackgroundGeolocation.stop();
   }
+
+  static Widget reasonTextField(TextEditingController controller) {
+    return Container(
+      padding: const EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+      ),
+      child: TextFormField(
+        cursorColor: Colors.white,
+        controller: controller,
+        keyboardType: TextInputType.text,
+        maxLines: 5,
+        style: const TextStyle(fontSize: 15, color: Colors.black),
+        decoration: InputDecoration(
+            border: InputBorder.none,
+            fillColor: Colors.white.withOpacity(0.1),
+            filled: true,
+            contentPadding: const EdgeInsets.all(0),
+            hintText: 'Reason',
+            hintStyle: TextStyle(
+                color: Colors.grey.withOpacity(0.8),
+                fontWeight: FontWeight.w300)
+          //labelText: hint,
+        ),
+      ),
+    );
+  }
 }
