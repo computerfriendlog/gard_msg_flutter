@@ -8,7 +8,6 @@ import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
-import '../../Widgets/CustomTextField.dart';
 import '../HomeScreen.dart';
 
 class SiteSchedule extends StatefulWidget {
@@ -191,6 +190,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
                     CustomButton('Start Job', _width * 0.8, () {
                       Helper.showLoading(context);
                       checkAvailability();
+
                       ///for testing only
                       //startJob('on time, not late', 0);
                     }),
@@ -221,7 +221,8 @@ class _SiteScheduleState extends State<SiteSchedule> {
 
   void startJob(String reason, double total_miles) async {
     print('starting job here');
-    print('location while starting is ${Helper.currentPositon.latitude.toString()}     ${Helper.currentPositon.longitude.toString()}');
+    print(
+        'location while starting is ${Helper.currentPositon.latitude.toString()}     ${Helper.currentPositon.longitude.toString()}');
     final parameters = {
       'type': Constants.START_PATROL,
       'office_name': officeName,
@@ -266,6 +267,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
               reason: reasn,
               dis: total_miles,
               job: this_job!)));
+
     }
   }
 
@@ -508,22 +510,26 @@ class _SiteScheduleState extends State<SiteSchedule> {
     }*/
 
     if (respose.data['RESULT'] == 'OK') {
-      if (respose.data['status'] == 0) {//
+      if (false) {//respose.data['status'] == 0
+        //
         Helper.Toast("Errors related to job_id, guard_id , site name",
             Constants.toast_grey);
-      } else if (respose.data['status'] == 1) {//
+      } else if (false) {//respose.data['status'] == 1
+        //
         if (LocalDatabase.getString(LocalDatabase.STARTED_JOB) == 'null') {
           startJob('on time, not late', 0);
         } else {
           Navigator.pop(context);
           Helper.Toast('Once complete your first job', Constants.toast_grey);
         }
-      }//
-      else if (respose.data['status'] == 2) {//
+      } //
+      else if (true) { //respose.data['status'] == 2
+        //
         ///start job with image and reason, fare from location
         TextEditingController _controller_reason_of_late =
-        TextEditingController();
-        Dialog rejectDialog_with_reason = Dialog(shape:
+            TextEditingController();
+        Dialog rejectDialog_with_reason = Dialog(
+          shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           //this right here
           child: SizedBox(
@@ -558,7 +564,6 @@ class _SiteScheduleState extends State<SiteSchedule> {
                   height: 20,
                 ),
                 Helper.reasonTextField(_controller_reason_of_late),
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -567,8 +572,8 @@ class _SiteScheduleState extends State<SiteSchedule> {
                           if (_controller_reason_of_late.text.isEmpty) {
                             Helper.Toast('Invalid reason', Colors.grey);
                           } else {
-                            clickImageByCamera(0,
-                                _controller_reason_of_late.text.trim());
+                            clickImageByCamera(
+                                0, _controller_reason_of_late.text.trim());
                           }
                         },
                         child: const Padding(
@@ -583,8 +588,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
                         )),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.of(context, rootNavigator: true)
-                            .pop(false);
+                        Navigator.of(context, rootNavigator: true).pop(false);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.grey[300],
@@ -602,25 +606,27 @@ class _SiteScheduleState extends State<SiteSchedule> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 10,),
+                const SizedBox(
+                  height: 10,
+                ),
               ],
             ),
           ),
         );
-        showDialog(context: context,
+        showDialog(
+            context: context,
             builder: (BuildContext context) => rejectDialog_with_reason);
-      }
-      else if (respose.data['status'] == 3) {
+      } else if (respose.data['status'] == 3) {
         Navigator.pop(context);
         Helper.msgDialog(context,
             'I\'m afraid we cannot start your shift, Kindly call office to get shift started',
             () {
           Navigator.pop(context);
         });
-      }
-      else if (respose.data['status'] == 4) {
+      } else if (respose.data['status'] == 4) {
         Navigator.pop(context);
-        Helper.msgDialog(context, 'I can\'t start job due to time difference, Please ask your office to start it.',
+        Helper.msgDialog(context,
+            'I can\'t start job due to time difference, Please ask your office to start it.',
             () {
           Navigator.pop(context);
         });

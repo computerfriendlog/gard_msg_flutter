@@ -26,6 +26,7 @@ import '../Models/CheckPoint.dart';
 import '../Services/LocationService.dart';
 import '../main.dart';
 import 'AvailabilityScreen.dart';
+import 'Camera/imageWithImagePicker.dart';
 import 'HistoryScreen.dart';
 import 'WebViewScreen.dart';
 import 'package:zoom_widget/zoom_widget.dart';
@@ -591,8 +592,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(
-                                      context, CalenderScreen.routeName);
+                                  //Navigator.pushNamed(context, CalenderScreen.routeName);
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (context) => ImgePickerByCamera()));
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
