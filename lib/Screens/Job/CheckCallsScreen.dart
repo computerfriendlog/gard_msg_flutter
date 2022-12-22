@@ -8,9 +8,9 @@ import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Models/CheckPoint.dart';
 import '../../Widgets/CustomButton.dart';
-import '../Camera/TakePictureScreen.dart';
 import '../HomeScreen.dart';
 import 'package:intl/intl.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CheckCallsScreen extends StatefulWidget {
   static const routeName = '/CheckCallsScreen';
@@ -118,11 +118,28 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                   ElevatedButton(
                                       onPressed: () async {
                                         ///  check point with image
-                                        //TakePictureScreen
-                                        final cameras =
-                                            await availableCameras();
-                                        final firstCamera = cameras.first;
-                                        Navigator.of(context).push(
+                                        //doint here
+                                        try {
+                                          final ImagePicker _picker =
+                                              ImagePicker();
+                                          final XFile? photo =
+                                              await _picker.pickImage(
+                                                  source: ImageSource.camera);
+                                          if (photo != null) {
+                                            APICalls.sentAcknowledgement(
+                                                context,
+                                                job!.job_id!,
+                                                photo.path);
+                                          } else {
+                                            Helper.Toast('Image not found',
+                                                Constants.toast_grey);
+                                          }
+                                        } catch (e) {
+                                          Helper.Toast(
+                                              Constants.somethingwentwrong,
+                                              Constants.toast_red);
+                                        }
+                                        /*Navigator.of(context).push(
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     TakePictureScreen(
@@ -131,7 +148,7 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                                         dis: 0.0,
                                                         job: NewJob(
                                                             job_id:
-                                                                job!.job_id))));
+                                                                job!.job_id))));*/
                                       },
                                       child: const Padding(
                                         padding: EdgeInsets.all(12.0),
@@ -217,7 +234,11 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                 checkPoint: chkPoint_list[index],
                                 function_handle: () {
                                   //doing here
-                                  DateTime tempDate = DateFormat("dd-MM-yyyy hh:m:ss").parse(chkPoint_list[index].time!.toString());
+                                  DateTime tempDate =
+                                      DateFormat("dd-MM-yyyy hh:m:ss").parse(
+                                          chkPoint_list[index]
+                                              .time!
+                                              .toString());
                                   //print('time is ${chkPoint_list[index].time}       ${tempDate.toString()}        ');
                                   //print('difference in minuts   ${Helper.getCurrentTime().difference(tempDate).inMinutes}   ${tempDate.difference(Helper.getCurrentTime()).inMinutes}');
                                   if (chkPoint_list[index].status == '0') {
@@ -325,21 +346,39 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
                                                               width * 0.3,
                                                               () async {
                                                             /// predefined check point with image
-                                                            //TakePictureScreen
-                                                            final cameras =
-                                                                await availableCameras();
-                                                            final firstCamera =
-                                                                cameras.first;
-                                                            Navigator.of(context).push(MaterialPageRoute(
-                                                                builder: (context) => TakePictureScreen(
-                                                                    camera:
-                                                                        firstCamera,
-                                                                    reason:
+                                                                try {
+                                                                  final ImagePicker _picker = ImagePicker();
+                                                                  final XFile? photo = await _picker.pickImage(
+                                                                      source: ImageSource.camera);
+                                                                  if (photo != null) {
+                                                                    APICalls.sentPredefinedCheckPointAck(
+                                                                        context,
                                                                         '${chkPoint_list[index].check_point_id}}',
-                                                                    dis: 0.0,
-                                                                    job: NewJob(
-                                                                        job_id:
-                                                                            job!.job_id))));
+                                                                        1,
+                                                                        job!.job_id!,
+                                                                        photo.path);
+                                                                  } else {
+                                                                    Helper.Toast('Image not found',
+                                                                        Constants.toast_grey);
+                                                                  }
+                                                                } catch (e) {
+                                                                  Helper.Toast(
+                                                                      Constants.somethingwentwrong,
+                                                                      Constants.toast_red);
+                                                                }
+
+                                                            //final cameras = await availableCameras();
+                                                            //final firstCamera =cameras.first;
+                                                            // Navigator.of(context).push(MaterialPageRoute(
+                                                            //     builder: (context) => TakePictureScreen(
+                                                            //         camera:
+                                                            //             firstCamera,
+                                                            //         reason:
+                                                            //             '${chkPoint_list[index].check_point_id}}',
+                                                            //         dis: 0.0,
+                                                            //         job: NewJob(
+                                                            //             job_id:
+                                                            //                 job!.job_id))));
                                                           }),
                                                           CustomButton(
                                                               background:
@@ -449,10 +488,8 @@ class _CheckCallsScreenState extends State<CheckCallsScreen> {
     };
 
     try {
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
       print('respose is here send check without  calls ${respoce.data} ');
       Navigator.pop(context);
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {

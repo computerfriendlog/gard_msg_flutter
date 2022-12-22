@@ -5,7 +5,6 @@ import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Providers/CurrentJobsProvider.dart';
 import 'package:gard_msg_flutter/Providers/DatePicked.dart';
 import 'package:gard_msg_flutter/Providers/ImagesArray.dart';
-import 'package:gard_msg_flutter/Screens/Camera/TakePictureScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/CurrentJobsScreen.dart';
 import 'package:gard_msg_flutter/Screens/HomeScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/SiteSchedule.dart';
@@ -147,7 +146,7 @@ void notificationTap(navigatorState, appState, payload) async {
 
 @pragma('vm:enry-point')
 void notificationArrived(_, payload) {
-  Helper.Toast('arrived..fffffffffffffffffffffffffffffffffffff', Constants.toast_red);
+  //Helper.Toast('arrived..fffffffffffffffffffffffffffffffffffff', Constants.toast_red);
   print(
     "msg: Notification received while app is open with payload $payload   and $_",
   );

@@ -30,6 +30,7 @@ import 'Camera/imageWithImagePicker.dart';
 import 'HistoryScreen.dart';
 import 'WebViewScreen.dart';
 import 'package:zoom_widget/zoom_widget.dart';
+
 class HomeScreen extends StatefulWidget {
   static const routeName = '/HomeScreen';
 
@@ -132,8 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   bool yes = await APICalls.logoutCall(context);
                                   if (yes) {
                                     if (Helper.logOut() == true) {
-                                      Navigator.of(context)
-                                          .pushNamed(LoginScreen.routeName);
+                                      //Navigator.of(context).pushNamed(LoginScreen.routeName);
+                                      Navigator.pushNamedAndRemoveUntil(
+                                          context,
+                                          LoginScreen.routeName,
+                                          (Route<dynamic> route) => false);
                                     } else {
                                       Helper.Toast('Logout failed, try again',
                                           Constants.toast_red);
@@ -311,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               ),
                                             ),
                                           ],
-                                        ) ,
+                                        ),
                                       ),
                                     ),
                                     Column(
@@ -592,9 +596,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               InkWell(
                                 onTap: () {
-                                  //Navigator.pushNamed(context, CalenderScreen.routeName);
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (context) => ImgePickerByCamera()));
+                                  Navigator.pushNamed(context, CalenderScreen.routeName);
+                                  //Navigator.of(context).push(MaterialPageRoute(builder: (context) => ImgePickerByCamera()));
                                 },
                                 child: BoxForHome(
                                     width_box: _width * 0.25,
@@ -627,7 +630,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                     width_box: _width * 0.25,
                                     hight_box: _width * 0.3,
                                     lableText: 'Availability',
-                                    picture: 'assets/images/ic_availability.png'),
+                                    picture:
+                                        'assets/images/ic_availability.png'),
                               ),
                               InkWell(
                                 onTap: () async {
@@ -838,8 +842,9 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void rountNext() async{
-    String nextScreen = await LocalDatabase.getString(LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION);
+  void rountNext() async {
+    String nextScreen = await LocalDatabase.getString(
+        LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION);
     print('nextscreen:  $nextScreen}');
     if (nextScreen == Constants.NEXT_SCREEN_CURRENTJOBS) {
       Navigator.of(context).pushNamed(CurrentJobs.routeName);
@@ -848,6 +853,7 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       //remain here...
     }
-    LocalDatabase.saveString(LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION, Constants.NEXT_SCREEN_HOME);
+    LocalDatabase.saveString(
+        LocalDatabase.SCREEN_OPEN_ON_NOTIFICATION, Constants.NEXT_SCREEN_HOME);
   }
 }

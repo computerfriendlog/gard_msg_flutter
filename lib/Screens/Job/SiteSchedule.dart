@@ -1,14 +1,16 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:gard_msg_flutter/Helper/LocalDatabase.dart';
 import 'package:gard_msg_flutter/Models/NewJob.dart';
 import 'package:camera/camera.dart';
-import 'package:gard_msg_flutter/Screens/Camera/TakePictureScreen.dart';
 import 'package:gard_msg_flutter/Screens/Job/FinishJobScreen.dart';
 import 'package:gard_msg_flutter/Widgets/CustomButton.dart';
 import '../../APIs/RestClient.dart';
 import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
 import '../HomeScreen.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SiteSchedule extends StatefulWidget {
   static const routeName = '/SiteSchedule';
@@ -24,6 +26,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
   final restClient = RestClient();
   var _hight;
   var _width;
+  bool firstTime = true;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +34,11 @@ class _SiteScheduleState extends State<SiteSchedule> {
     _hight = mediaQueryData.size.height;
     _width = mediaQueryData.size.width;
 
-    this_job = ModalRoute.of(context)?.settings.arguments as NewJob?;
+    if (firstTime) {
+      this_job = ModalRoute.of(context)?.settings.arguments as NewJob?;
+      firstTime = false;
+    }
+
     print('job is    ${this_job!.job_id.toString()}');
     return SafeArea(
       child: Scaffold(
@@ -252,28 +259,121 @@ class _SiteScheduleState extends State<SiteSchedule> {
   }
 
   void clickImageByCamera(double total_miles, String reasn) async {
-    final cameras = await availableCameras();
-    final firstCamera = cameras.first;
-    print('going to camera screen   ${firstCamera.name}');
+    //final cameras = await availableCameras();
+    //final firstCamera = cameras.first;
+    //print('going to camera screen   ${firstCamera.name}');
 
     /// it must be on image pick screen
     ///startJobWithImage(total_miles, reason, imagePath_clicked);
     Navigator.pop(context);
-    if (firstCamera != null) {
-      //MaterialPageRoute(builder: (context) => TakePictureScreen(camera: firstCamera));
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => TakePictureScreen(
-              camera: firstCamera,
-              reason: reasn,
-              dis: total_miles,
-              job: this_job!)));
-
+    try {
+      final ImagePicker _picker = ImagePicker();
+      final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+      startJobWithImage(total_miles, reasn, File(photo!.path));
+    } catch (e) {
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
     }
   }
 
+
+
+  void startJobWithImage(
+      double total_miles, String reason, File img_file) async {
+    print('start with image ');
+    String fileName = img_file.path.split('/').last;
+    FormData formData = FormData.fromMap({
+      'type': Constants.START_PATROL_WITH_PICTURE,
+      'office_name': officeName,
+      'job_id': this_job!.job_id,
+      'guard_id': gard_id,
+      'latitude': Helper.currentPositon.latitude.toString(),
+      'longitude': Helper.currentPositon.longitude.toString(),
+      'reason': reason,
+      'total_miles': total_miles,
+      "start_patrol_image": await MultipartFile.fromFile(img_file.path, filename: fileName),
+    });
+    /*final parameters = {
+      'type': Constants.START_PATROL_WITH_PICTURE,
+      'office_name': officeName,
+      'job_id': this_job!.job_id,
+      'guard_id': gard_id,
+      'latitude': Helper.currentPositon.latitude.toString(),
+      'longitude': Helper.currentPositon.longitude.toString(),
+      'reason': reason,
+      'total_miles': total_miles,
+      'start_patrol_image': formData //img_file.readAsBytesSync()
+    };*/
+
+    final respose = await restClient.post(Constants.BASE_URL + "",
+        headers: {}, data: formData, body: {});
+    Navigator.pop(context);
+    print('start with image respose is here${respose.data['msg']}');
+    if (respose.data['RESULT'] == 'OK' && respose.data['status'] == 1) {
+      if (respose.data['msg']
+          .toString()
+          .toLowerCase()
+          .contains('shift started successfully')) {
+        Helper.Toast('Your shift started successfully', Constants.toast_grey);
+        LocalDatabase.saveString(
+            LocalDatabase.STARTED_JOB, this_job!.job_id.toString());
+        Navigator.pop(context); //to remove current activity from context, ta k next activity say back is py na ay
+        Navigator.of(context).pushNamed(FinishJobScreen.routeName, arguments: this_job);
+      } else {
+        Helper.Toast(
+            'Cannot start shift, Kindly call office to get shift started',
+            Constants.toast_red);
+      }
+    } else {
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+    }
+  }
+
+ /* void startJobWithImagePreviousConfromWorkingWithImageIssue(
+      double total_miles, String reason, File img_file) async {
+    print('start with image ');
+    String fileName = img_file.path.split('/').last;
+    FormData formData = FormData.fromMap({
+
+      "start_patrol_image": await MultipartFile.fromFile(img_file.path, filename: fileName),
+    });
+    final parameters = {
+      'type': Constants.START_PATROL_WITH_PICTURE,
+      'office_name': officeName,
+      'job_id': this_job!.job_id,
+      'guard_id': gard_id,
+      'latitude': Helper.currentPositon.latitude.toString(),
+      'longitude': Helper.currentPositon.longitude.toString(),
+      'reason': reason,
+      'total_miles': total_miles,
+      'start_patrol_image': formData //img_file.readAsBytesSync()
+    };
+
+    final respose = await restClient.put(Constants.BASE_URL + "",
+        headers: {}, body: parameters);
+    Navigator.pop(context);
+    print('start with image respose is here${respose.data['msg']}');
+    if (respose.data['RESULT'] == 'OK' && respose.data['status'] == 1) {
+      if (respose.data['msg']
+          .toString()
+          .toLowerCase()
+          .contains('shift started successfully')) {
+        Helper.Toast('Your shift started successfully', Constants.toast_grey);
+        LocalDatabase.saveString(
+            LocalDatabase.STARTED_JOB, this_job!.job_id.toString());
+        Navigator.pop(context); //to remove current activity from context, ta k next activity say back is py na ay
+        Navigator.of(context).pushNamed(FinishJobScreen.routeName, arguments: this_job);
+      } else {
+        Helper.Toast(
+            'Cannot start shift, Kindly call office to get shift started',
+            Constants.toast_red);
+      }
+    } else {
+      Helper.Toast(Constants.somethingwentwrong, Constants.toast_red);
+    }
+  }*/
+
   void checkAvailability() async {
     await Helper.determineCurrentPosition();
-
     final parameters = {
       'type': Constants.JOB_DRIVER_RADIUS,
       'office_name': officeName,
@@ -285,236 +385,15 @@ class _SiteScheduleState extends State<SiteSchedule> {
     final respose = await restClient.post(Constants.BASE_URL + "",
         headers: {}, body: parameters);
     print('response of checking radius is here  $respose  ');
-    /*double jb_lt;
-    double jb_lo;
-    if (this_job!.latitude == '' || this_job!.latitude == '') {
-      jb_lt = 00.13212;
-      jb_lo = 00.13212;
-    } else {
-      jb_lt = this_job!.latitude as double;
-      jb_lo = this_job!.longitude as double;
-    }
-
-    double dis = Helper.distanceLatLong(Helper.currentPositon.latitude,
-        Helper.currentPositon.longitude, jb_lt, jb_lo);
-    print('distance is ... ${dis}');
-    //clickImageByCamera(dis, 'testing');
-    //startJob('on time, not late', dis);
-    dis = 0;
-    if (dis < 0.3) {
-      ///just start shit on site location
-      startJob('on time, not late', dis);
-    }
-    else if (dis >= 0.3 && dis < 0.5) {
-
-      ///start job with image and reason, fare from location
-      TextEditingController _controller_reason_of_late =
-      TextEditingController();
-      Dialog rejectDialog_with_reason = Dialog(
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12.0)),
-        //this right here
-        child: SizedBox(
-          height: _hight * 0.5,
-          width: _width * 0.7,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                //width: _width * 0.6
-                decoration: BoxDecoration(
-                    color:
-                    Theme.of(context).primaryColor,
-                    borderRadius:
-                    const BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12),
-                    )),
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text(
-                    'I\'m afraid we cannot identify your location, kindly provide surrounding image and a reason ',
-                    style: TextStyle(
-                        color: Colors.white,
-                        //Theme.of(context).cardColor
-                        fontSize: 12,
-                        fontWeight: FontWeight.w100),
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Container(
-                padding: const EdgeInsets.only(
-                    top: 10,
-                    bottom: 5,
-                    right: 10,
-                    left: 10),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding:
-                          const EdgeInsets.only(
-                              top: 20,
-                              bottom: 20,
-                              right: 10,
-                              left: 10),
-                          child: CustomTextField(
-                              _width * 0.6,
-                              '',
-                              'Reason',
-                              TextInputType.name,
-                              _controller_reason_of_late),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    Row(
-                      mainAxisAlignment:
-                      MainAxisAlignment.spaceEvenly,
-                      children: [
-                        ElevatedButton(
-                            onPressed: () {
-                              if (_controller_reason_of_late
-                                  .text.isEmpty) {
-                                Helper.Toast(
-                                    'Invalid reason',
-                                    Colors.grey);
-                              } else {
-                                clickImageByCamera(
-                                    dis,
-                                    _controller_reason_of_late
-                                        .text
-                                        .trim());
-                              }
-                            },
-                            child: const Padding(
-                              padding:
-                              EdgeInsets.all(8.0),
-                              child: Text(
-                                'Submit',
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight:
-                                    FontWeight
-                                        .w100),
-                              ),
-                            )),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.of(context,
-                                rootNavigator: true)
-                                .pop(false);
-                          },
-                          style:
-                          ElevatedButton.styleFrom(
-                            backgroundColor:
-                            Colors.grey[300],
-                          ),
-                          child: const Padding(
-                            padding:
-                            EdgeInsets.all(8.0),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight:
-                                  FontWeight.w100),
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-      showDialog(
-          context: context,
-          builder: (BuildContext context) =>
-          rejectDialog_with_reason);
-    }
-    else {
-      //Helper.Toast("I'm afraid we cannot start your shift, Kindly call office to get shift started", Constants.toast_red);
-
-      Navigator.pop(context);
-      Dialog rejectDialog_with_reason = Dialog(
-          shape: RoundedRectangleBorder(
-              borderRadius:
-              BorderRadius.circular(12.0)),
-          child: Container(
-            height: _hight * 0.3,
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              mainAxisAlignment:
-              MainAxisAlignment.spaceEvenly,
-              children: [
-                Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Hi!",
-                      style: TextStyle(
-                          fontWeight: FontWeight.w100,
-                          fontSize: 16,
-                          color: Colors.black),
-                    ),
-                  ],
-                ),
-                const Text(
-                  "I'm afraid we cannot start your shift, Kindly call office to get shift started",
-                  style: TextStyle(
-                      fontWeight: FontWeight.w100,
-                      fontSize: 16,
-                      color: Colors.black),
-                ),
-                Row(
-                  mainAxisAlignment:
-                  MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text(
-                          'OK',
-                          style: TextStyle(
-                              fontWeight:
-                              FontWeight.w100,
-                              fontSize: 16,
-                              color: Colors.black),
-                        )),
-                  ],
-                )
-              ],
-            ),
-          ));
-      showDialog(
-          context: context,
-          builder: (BuildContext context) =>
-          rejectDialog_with_reason);
-    }*/
 
     if (respose.data['RESULT'] == 'OK') {
-      if (false) {//respose.data['status'] == 0
+      if (false) {
+        //respose.data['status'] == 0
         //
         Helper.Toast("Errors related to job_id, guard_id , site name",
             Constants.toast_grey);
-      } else if (false) {//respose.data['status'] == 1
+      } else if (false) {
+        //respose.data['status'] == 1
         //
         if (LocalDatabase.getString(LocalDatabase.STARTED_JOB) == 'null') {
           startJob('on time, not late', 0);
@@ -523,7 +402,7 @@ class _SiteScheduleState extends State<SiteSchedule> {
           Helper.Toast('Once complete your first job', Constants.toast_grey);
         }
       } //
-      else if (true) { //respose.data['status'] == 2
+      else if (true) {//respose.data['status'] == 2
         //
         ///start job with image and reason, fare from location
         TextEditingController _controller_reason_of_late =

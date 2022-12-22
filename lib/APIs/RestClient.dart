@@ -28,12 +28,14 @@ class RestClient {
     String url, {
     required Map<String, String> headers,
     required Map<String, dynamic> body,
+     FormData? data,
   }) async {
+
     printFullLink(url,body);
     final bool isConnected = await Helper.isInternetAvailble();
     if (isConnected) {
       final response = await Dio()
-          .post(url, queryParameters: body, data: headers)
+          .post(url, queryParameters: body, data: data)//headers was no data para, value
           .catchError((error) {
         throw error;
       });

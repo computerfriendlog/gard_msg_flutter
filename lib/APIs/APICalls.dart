@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:gard_msg_flutter/Screens/WebViewScreen.dart';
 import '../Helper/Constants.dart';
 import '../Helper/Helper.dart';
 import '../Helper/LocalDatabase.dart';
@@ -15,13 +13,24 @@ class APICalls {
       BuildContext context, String job_id, String img_path) async {
     await Helper.determineCurrentPosition();
     FormData? formData;
+    MultipartFile? multipartFile;
+
     if (img_path != 'na') {
       String fileName = img_path.split('/').last;
-      formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(img_path, filename: fileName),
-      });
+      multipartFile =
+          await MultipartFile.fromFile(img_path, filename: fileName);
     }
-    final parameters = {
+    formData = FormData.fromMap({
+      'type': Constants.MANUAL_ACK_CHECKPOINT,
+      'office_name': officeName,
+      'job_id': job_id,
+      'latitude': Helper.currentPositon.latitude,
+      'longitude': Helper.currentPositon.longitude,
+      'guard_id': gard_id,
+      "check_point_image":
+          img_path == 'na' ? 'Image not available' : multipartFile,
+    });
+    /*final parameters = {
       'type': Constants.MANUAL_ACK_CHECKPOINT,
       'office_name': officeName,
       'job_id': job_id,
@@ -29,22 +38,19 @@ class APICalls {
       'longitude': Helper.currentPositon.longitude,
       'guard_id': gard_id,
       'check_point_image': img_path == 'na' ? 'Image not available' : formData,
-    };
+    };*/
 
     try {
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: {}, data: formData);
       print('respose is here send check without  calls ${respoce.data} ');
       Navigator.pop(context);
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
         Helper.Toast('Check point Acknowledgement sent', Constants.toast_grey);
         Navigator.pushNamed(context, HomeScreen.routeName);
       } else {
-        Helper.Toast(
-            'Can\'t send Acknowledgement, try again', Constants.toast_red);
+        Helper.Toast('Can\'t send Acknowledgement, try again', Constants.toast_red);
       }
     } catch (e) {
       print('jjjjjjjjjjjjjjjjjjjjjjjjjj   ${e.toString()}');
@@ -58,13 +64,15 @@ class APICalls {
     Helper.showLoading(context);
     await Helper.determineCurrentPosition();
     FormData? formData;
+    //Map<String,dynamic>? parameters;
+    String fileName;
+    MultipartFile? encoded_img;
     if (img_path != 'na') {
-      String fileName = img_path.split('/').last;
-      formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(img_path, filename: fileName),
-      });
+      fileName = img_path.split('/').last;
+      encoded_img = await MultipartFile.fromFile(img_path, filename: fileName);
     }
-    final parameters = {
+
+    formData = FormData.fromMap({
       'type': Constants.SEND_ACK,
       'office_name': officeName,
       'check_point_id': check_point_id,
@@ -74,14 +82,13 @@ class APICalls {
       'check_point_image': img_path == 'na' ? 'Image not available' : formData,
       'job_id': job_id,
       'guard_id': gard_id,
-    };
+      "check_point_image": img_path != 'na' ? encoded_img : 'without image',
+    });
 
     try {
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: {}, data: formData);
       print('aaaaaaaaaaaaaaaaaaaa${respoce.data} ');
       Navigator.pop(context);
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
@@ -109,10 +116,8 @@ class APICalls {
         'msg_text': msg,
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
       print('respose is here of client phone number ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK') {
         Helper.Toast('Sent', Constants.toast_grey);
@@ -133,10 +138,8 @@ class APICalls {
         'guard_id': gard_id,
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('alert sent, respoce is here...  $respoce');
       if (respoce.data['msg'] == 'Alert sent') {
@@ -162,10 +165,8 @@ class APICalls {
         'device_type': deviceType,
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('logout, respose is here...  $respoce');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
@@ -194,10 +195,8 @@ class APICalls {
         'device_type': deviceType,
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('status changing , response is here...  $respoce');
       Navigator.pop(context);
@@ -217,8 +216,7 @@ class APICalls {
     }
   }
 
-  static Future<bool> trackLocation(
-      String lat, String long) async {
+  static Future<bool> trackLocation(String lat, String long) async {
     officeName = await LocalDatabase.getString(LocalDatabase.USER_OFFICE);
     gard_id = await LocalDatabase.getString(LocalDatabase.GUARD_ID);
     String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
@@ -239,10 +237,8 @@ class APICalls {
         'track_type': 'normal',
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('location sent , response is here...  $respoce');
 
@@ -256,11 +252,11 @@ class APICalls {
         return false;
       }
     } catch (e) {
-      Helper.Toast("Tracking, "+Constants.somethingwentwrong, Constants.toast_red);
+      Helper.Toast(
+          "Tracking, " + Constants.somethingwentwrong, Constants.toast_red);
       return false;
     }
   }
-
 
   static Future<String> documentAPICall(BuildContext cntxt) async {
     Helper.showLoading(cntxt);
@@ -271,22 +267,23 @@ class APICalls {
         'guard_id': gard_id,
       };
       final restClient = RestClient();
-      final respoce = await restClient.get(Constants.BASE_URL + "", headers: {}, body: parameters);
+      final respoce = await restClient.get(Constants.BASE_URL + "",
+          headers: {}, body: parameters);
 
       print('document  , response is here...  $respoce');
 
-      if (respoce.data['RESULT'] == 'OK' ){
+      if (respoce.data['RESULT'] == 'OK') {
         //Helper.Toast('${respoce.data['DATA'][0]['count']} Documents received', Constants.toast_grey);
         //Navigator.of(cntxt).push( MaterialPageRoute(builder: (cntxt) =>  WebViewScreen(title: '${respoce.data['DATA']['count']} Documents received',url: respoce.data['DATA']['documents_link'])));
         Navigator.pop(cntxt);
         return respoce.data['DATA']['documents_link'];
         //print('document  , response is here... count ${respoce.data['DATA']['count']}   url: ${respoce.data['DATA']['documents_link']}');
       } else {
-        Helper.Toast('Can\'t get documents, please try again', Constants.toast_red);
+        Helper.Toast(
+            'Can\'t get documents, please try again', Constants.toast_red);
         Navigator.pop(cntxt);
         return 'null';
       }
-
     } catch (e) {
       Navigator.pop(cntxt);
       print('documents exceptionsssss ${e.toString()}');
@@ -294,6 +291,4 @@ class APICalls {
       return 'null';
     }
   }
-
-
 }

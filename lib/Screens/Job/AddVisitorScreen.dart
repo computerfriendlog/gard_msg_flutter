@@ -11,10 +11,9 @@ import '../../Helper/Constants.dart';
 import '../../Helper/Helper.dart';
 import '../../Helper/LocalDatabase.dart';
 import '../../Providers/ImagesArray.dart';
-import '../Camera/TakePictureInArray.dart';
 import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
-
+import 'package:image_picker/image_picker.dart';
 import '../HomeScreen.dart';
 
 class AddVisitorScreen extends StatefulWidget {
@@ -171,12 +170,27 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
                       children: [
                         InkWell(
                           onTap: () async {
-                            final cameras = await availableCameras();
+                            try {
+                              final ImagePicker _picker = ImagePicker();
+                              final XFile? photo = await _picker.pickImage(
+                                  source: ImageSource.camera);
+                              if (photo != null) {
+                                Provider.of<ImagesArray>(context, listen: false)
+                                    .add((photo.path));
+                              } else {
+                                Helper.Toast(
+                                    'Image not found', Constants.toast_grey);
+                              }
+                            } catch (e) {
+                              Helper.Toast(Constants.somethingwentwrong,
+                                  Constants.toast_red);
+                            }
+                            /* final cameras = await availableCameras();
                             final firstCamera = cameras.first;
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (context) => TakePictureInArray(
                                       camera: firstCamera,
-                                    )));
+                                    )));*/
                           },
                           child: Image.asset(
                               width: 70,
@@ -234,19 +248,31 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
     String job_id = await LocalDatabase.getString(LocalDatabase.STARTED_JOB);
     print('job id is   ${job_id}');
 
-    List<FormData> formData_list = [];
+    List<MultipartFile> imge_encoded_list = [];
 
     if (imagesList.isNotEmpty) {
       for (int i = 0; i < imagesList.length; i++) {
         String fileName = imagesList[i].split('/').last;
-        formData_list.add(FormData.fromMap({
-          "file":
-              await MultipartFile.fromFile(imagesList[i], filename: fileName),
-        }));
+        imge_encoded_list.add(
+            await MultipartFile.fromFile(imagesList[i], filename: fileName));
       }
     }
+
+    FormData data = FormData.fromMap({
+      'type': Constants.SAVE_VISITORS,
+      'office_name': officeName,
+      'guard_id': gard_id,
+      'job_id': job_id,
+      'name': _controller_name.text.trim(),
+      'company': _controller_company.text.trim(),
+      'vehicle_reg': _controller_vehicle.text.trim(),
+      'visit_purpose': _controller_purpose.text.trim(),
+      'time_in': _controller_time_in.text.trim(),
+      'time_out': _controller_time_out.text.trim(),
+      "image_name": imge_encoded_list,
+    });
     try {
-      final parameters = {
+      /* final parameters = {
         'type': Constants.SAVE_VISITORS,
         'office_name': officeName,
         'guard_id': gard_id,
@@ -257,12 +283,10 @@ class _AddVisitorScreenState extends State<AddVisitorScreen> {
         'visit_purpose': _controller_purpose.text.trim(),
         'time_in': _controller_time_in.text.trim(),
         'time_out': _controller_time_out.text.trim(),
-        'image_name': formData_list,
-      };
-      final respoce = await restClient.post(
-          Constants.BASE_URL + "",
-          headers: {},
-          body: parameters);
+        'image_name': imge_encoded_list,
+      };*/
+      final respoce = await restClient.post(Constants.BASE_URL + "",
+          headers: {}, body: {}, data: data);
 
       print('response is here of check visitor added  ${respoce.data} ');
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {

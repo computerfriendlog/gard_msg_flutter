@@ -113,18 +113,18 @@ class _IncedentShowScreenState extends State<IncedentShowScreen> {
           Constants.BASE_URL + "",
           headers: {},
           body: parameters);
-      print('respose is here of check calls ${respoce.data} ');
+      print('respose is here of incidents  ${respoce.data} ');
       incident_list.clear();
       if (respoce.data['RESULT'] == 'OK' && respoce.data['status'] == 1) {
         respoce.data['DATA'].forEach((value) {
-          print('incident value is hrer   ${value['notes']}');
+          //print('incident value is hrer   ${value['notes']}');
           incident_list.add(Incident(
               id: value['id'],
               job_id: value['job_id'],
               name: value['name'],
               incident_type: value['incident_type'],
               logged_by: value['Logged_by'],
-              notes: value['notes']));
+              notes: value['notes']??'null'));
         });
         print('incidents are ${incident_list.length.toString()}');
       }else if(respoce.data['status'] == 0){
